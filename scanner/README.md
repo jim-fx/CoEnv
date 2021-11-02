@@ -26,7 +26,7 @@ _Thats all for now._
 
 ## Some Screenshote
 
-![01](doku/diary/01-opencv-learn/01.jpg)
+![01](../doku/diary/01-opencv-learn/01.jpg)
 
 Tomorrow i will probably take a look at (Template Matching)[https://docs.opencv.org/3.4.14/d4/dc6/tutorial_py_template_matching.html]
 
