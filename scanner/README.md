@@ -26,9 +26,16 @@ _Thats all for now._
 
 ## Some Screenshote
 
-![01](../doku/diary/01-opencv-learn/01.jpg)
+![Normal Webcam of dude](../doku/diary/01-opencv-learn/01.jpg)
+![slightly blurred version of previous](../doku/diary/01-opencv-learn/02.jpg)
+![b/w version](../doku/diary/01-opencv-learn/03.jpg)
+Sobel Edge Detection
+![sobel edge detection](../doku/diary/01-opencv-learn/04.jpg)
+Canny Edge Detection
+![canny edge detection](../doku/diary/01-opencv-learn/05.jpg)
+![canny edge detection tweaked](../doku/diary/01-opencv-learn/06.jpg)
 
-Tomorrow i will probably take a look at (Template Matching)[https://docs.opencv.org/3.4.14/d4/dc6/tutorial_py_template_matching.html]
+Tomorrow i will probably take a look at [Template Matching](https://docs.opencv.org/3.4.14/d4/dc6/tutorial_py_template_matching.html)
 
 
 
