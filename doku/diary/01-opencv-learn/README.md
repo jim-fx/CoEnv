@@ -24,7 +24,7 @@ Then the program starts an infinite loop, in which it grabs a frame from the cam
 
 _Thats all for now._
 
-## Some Screenshote
+## Some Screenshots
 
 ![Normal Webcam of dude](01.jpg)
 ![slightly blurred version of previous](02.jpg)
