@@ -1,0 +1,44 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/x86_64-linux-gnu-g++-10",
+      "-c",
+      "scanner.cpp",
+      "-o",
+      "main",
+      "-I/home/jim/COCO/16_FunctionObjects/scanner/",
+      "-I/usr/local/include/opencv4"
+    ],
+    "directory": "/home/jim/COCO/16_FunctionObjects/scanner",
+    "file": "/home/jim/COCO/16_FunctionObjects/scanner/scanner.cpp",
+    "output": "/home/jim/COCO/16_FunctionObjects/scanner/scanner.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/x86_64-linux-gnu-g++-10",
+      "-c",
+      "modules/filter.cpp",
+      "-o",
+      "main",
+      "-I/home/jim/COCO/16_FunctionObjects/scanner/",
+      "-I/usr/local/include/opencv4"
+    ],
+    "directory": "/home/jim/COCO/16_FunctionObjects/scanner",
+    "file": "/home/jim/COCO/16_FunctionObjects/scanner/modules/filter.cpp",
+    "output": "/home/jim/COCO/16_FunctionObjects/scanner/modules/filter.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/x86_64-linux-gnu-g++-10",
+      "-c",
+      "modules/webcam.cpp",
+      "-o",
+      "main",
+      "-I/home/jim/COCO/16_FunctionObjects/scanner/",
+      "-I/usr/local/include/opencv4"
+    ],
+    "directory": "/home/jim/COCO/16_FunctionObjects/scanner",
+    "file": "/home/jim/COCO/16_FunctionObjects/scanner/modules/webcam.cpp",
+    "output": "/home/jim/COCO/16_FunctionObjects/scanner/modules/webcam.o"
+  }
+]

@@ -1,1 +1,3 @@
 .pnpm-debug.log
+scanner/.output
+scanner/.cache
