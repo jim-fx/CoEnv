@@ -10,4 +10,4 @@ Secondly the allgorithm i designed yesterday was a good starting point, but i so
 
 ![](02.jpg)
 
-![](smol.webp / WEBP)
+![](smol.webp)
