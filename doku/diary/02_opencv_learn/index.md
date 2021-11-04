@@ -46,3 +46,7 @@ The `$(pkg-config ...)` part is another program which helps you include the nece
 Some more information can be found [here](https://earthly.dev/blog/g++-makefile/)
 
 _So, an hour later i am still no closer to my goal of template matching._
+
+Later today i continued designing an idea on how to scan the sigils.
+
+![Design SVG](./allgorithm-design.svg);

@@ -5,11 +5,11 @@
 using namespace cv;
 using namespace std;
 
-VideoCapture createWebcam() {
+VideoCapture createWebcam(int index) {
   // Open the default video camera
   VideoCapture cap;
 
-  cap.open(0);
+  cap.open(index);
 
   // if not success, exit program
   if (cap.isOpened() == false) {

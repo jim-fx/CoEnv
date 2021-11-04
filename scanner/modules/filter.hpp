@@ -5,7 +5,7 @@
 
 using namespace cv;
 
-Mat filterCanny(Mat input);
+Mat filterCanny(Mat input, int vA, int vB, int vC);
 Mat splitMat(Mat inputA, Mat inputB);
 
 #endif

@@ -8,6 +8,6 @@ run: build
 dev:
 	make run;
 	while true; do \
-    inotifywait -qr -e modify -e create -e delete -e move ./**/*.cpp; \
+    inotifywait -qr -e modify -e create -e delete -e move ./**/*.cpp ./*.cpp; \
     make run;\
   done

@@ -3,6 +3,6 @@
 
 #include "opencv2/opencv.hpp"
 using namespace cv;
-VideoCapture createWebcam();
+VideoCapture createWebcam(int);
 
 #endif
