@@ -11,5 +11,5 @@ Here you will see the documented journey of creating some stuff for CoCo.
 
 Kind of related, Presentation in another course for this project:
 
-## [Presentation](jim-fx.github.io/entp_marketing_presentation)
-## [Code for the Presentation](github.com/jim-fx/entp_marketing_presentation)
+## [Presentation](https://jim-fx.github.io/entp_marketing_presentation)
+## [Code for the Presentation](https://github.com/jim-fx/entp_marketing_presentation)
