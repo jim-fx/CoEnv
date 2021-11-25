@@ -16,6 +16,8 @@ Here you will see the documented journey of creating some stuff for CoCo.
 [Code for the Presentation](https://github.com/jim-fx/entp_marketing_presentation)
 
 ## Paper from a related ethics course on CoEnv
-[PDF](https://github.com/jim-fx/coenv-ethics/main.pdf)
+[PDF](https://jim-fx.github.io/coenv-ethics/main.pdf)
 
-[Website](https://github.com/jim-fx/coenv-ethics)
+[Website](https://jim-fx.github.io/coenv-ethics)
+
+[Code for the Paper](https://github.com/jim-fx/coenv-ethics)
