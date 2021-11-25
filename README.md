@@ -8,8 +8,14 @@ Here you will see the documented journey of creating some stuff for CoCo.
 
 ## [3. Day (Learning OpenCV III)](doku/diary/03_learning_opencv/README.md)
 
+## [4. Day (Fixing Bugs in OpenCV)](doku/diary/04_fixing_bugs/README.md)
 
-Kind of related, Presentation in another course for this project:
+## Presentation from a related Marketing Course on CoEnv
+[Presentation](https://jim-fx.github.io/entp_marketing_presentation)
 
-## [Presentation](https://jim-fx.github.io/entp_marketing_presentation)
-## [Code for the Presentation](https://github.com/jim-fx/entp_marketing_presentation)
+[Code for the Presentation](https://github.com/jim-fx/entp_marketing_presentation)
+
+## Paper from a related ethics course on CoEnv
+[PDF](https://github.com/jim-fx/coenv-ethics/main.pdf)
+
+[Website](https://github.com/jim-fx/coenv-ethics)

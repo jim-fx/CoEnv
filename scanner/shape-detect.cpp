@@ -12,6 +12,7 @@
 #include <modules/webcam.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <string>
 
 /**
  * Helper function to find a cosine of angle between vectors
@@ -95,8 +96,7 @@ double _distance(Point p1, Point p2) {
 }
 
 void fourPointTransform(Mat src, Mat &dst, std::vector<Point> pts) {
-  std::vector<Point> ordered_pts;
-  orderPoints(pts, ordered_pts);
+  std::vector<Point> ordered_pts = pts;
 
   double wa = _distance(ordered_pts[2], ordered_pts[3]);
   double wb = _distance(ordered_pts[1], ordered_pts[0]);
@@ -106,12 +106,6 @@ void fourPointTransform(Mat src, Mat &dst, std::vector<Point> pts) {
   double hb = _distance(ordered_pts[0], ordered_pts[3]);
   double mh = max(ha, hb);
 
-	if(mh > mw){
-		double temp = mh;
-		mh = mw;
-		mw = temp;
-	}
-
   Point2f src_[] = {
       Point2f(ordered_pts[0].x, ordered_pts[0].y),
       Point2f(ordered_pts[1].x, ordered_pts[1].y),
@@ -119,12 +113,19 @@ void fourPointTransform(Mat src, Mat &dst, std::vector<Point> pts) {
       Point2f(ordered_pts[3].x, ordered_pts[3].y),
   };
 
-	float xOff = mw/2;
+ if (mw > mh) {
+    src_[0] = Point2f(ordered_pts[3].x, ordered_pts[3].y);
+    src_[1] = Point2f(ordered_pts[0].x, ordered_pts[0].y);
+    src_[2] = Point2f(ordered_pts[1].x, ordered_pts[1].y);
+    src_[3] = Point2f(ordered_pts[2].x, ordered_pts[2].y);
+  }
 
-  Point2f dst_[] = {Point2f(0+xOff, 0), Point2f(mw - 1+xOff, 0), Point2f(mw - 1+xOff, mh - 1),
-                    Point2f(0+xOff, mh - 1)};
-   Mat m = getPerspectiveTransform(src_, dst_);
-		warpPerspective(src, dst, m, Size(mw*2, mh));
+  float xOff = mw / 2;
+
+  Point2f dst_[] = {Point2f(0 + xOff, 0), Point2f(mw - 1 + xOff, 0),
+                    Point2f(mw - 1 + xOff, mh - 1), Point2f(0 + xOff, mh - 1)};
+  Mat m = getPerspectiveTransform(src_, dst_);
+  warpPerspective(src, dst, m, Size(mw * 2, mh));
 }
 
 void drawContour(std::vector<cv::Point> contour, cv::Mat dst) {
@@ -150,38 +151,41 @@ void drawContour(std::vector<cv::Point> contour, cv::Mat dst) {
   // Sort ascending the cosine values
   std::sort(cos.begin(), cos.end());
 
-  // Get the lowest and the highest cosine
-  // double mincos = cos.front();
-  // double maxcos = cos.back();
-
-  // setLabel(dst, "HEXA", contour);
-
   // Draw center
   std::vector<cv::Point> centerRect(4);
-	centerRect[0] = approx[0];
-	centerRect[1] = approx[1];
-	centerRect[2] = approx[3];
-	centerRect[3] = approx[4];
-  //polylines(dst, centerRect, true, Scalar(120, 120, 120), 1, 150, 0);
+
+  if (_distance(approx[0], approx[1]) >= _distance(approx[1], approx[2])) {
+    centerRect[0] = approx[1];
+    centerRect[1] = approx[3];
+    centerRect[2] = approx[4];
+    centerRect[3] = approx[0];
+  } else {
+    centerRect[0] = approx[0];
+    centerRect[1] = approx[1];
+    centerRect[2] = approx[3];
+    centerRect[3] = approx[4];
+  }
 
   Mat warped_image;
   fourPointTransform(dst, warped_image, centerRect);
 
-	Mat warped_image_size;
+  Mat warped_image_size;
 
-	resize(warped_image, warped_image_size, Size(200, 200), 0, 0, INTER_CUBIC);
+  resize(warped_image, warped_image_size, Size(200, 200), 0, 0, INTER_CUBIC);
 
-	Mat warped_image_grey;
-	cvtColor(warped_image_size, warped_image_grey, cv::COLOR_BGR2GRAY);
+  Mat warped_image_grey;
+  cvtColor(warped_image_size, warped_image_grey, cv::COLOR_BGR2GRAY);
 
-	Mat warped_image_thresh;
-	threshold(warped_image_grey,warped_image_thresh, 100, 255, THRESH_BINARY);
+  Mat warped_image_thresh;
+  threshold(warped_image_grey, warped_image_thresh, 100, 255, THRESH_BINARY);
 
   imshow("Warped Image", warped_image_thresh);
 
+  polylines(dst, centerRect, true, Scalar(120, 120, 120), 1, 150, 0);
+
   for (int x = 0; x < 6; x++) {
     Point p = approx[x];
-    cv::circle(dst, p, 4, ScalarHSV2BGR(x * 20, 120, 200), 5);
+    cv::circle(dst, p, 4 + x, ScalarHSV2BGR(x * 20, 120, 200), 5);
   }
 }
 
