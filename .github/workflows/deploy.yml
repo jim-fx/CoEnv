@@ -105,6 +105,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build_symbol,build_entp_marketing,build_ethics]
     steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2
+
       - run: mkdir -p "tmp/deploy"
       - name: download artifacts
         uses: actions/download-artifact@v2
