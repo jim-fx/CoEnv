@@ -88,14 +88,13 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: [build_symbol,build_entp_marketing]
+    needs: [build_symbol,build_entp_marketing,build_pdf]
     steps:
       - run: mkdir -p "tmp/deploy"
       - run: cp -r symbol-create/build tmp/deploy/symbol
       - run: cp -r doku/entp-marketing/build tmp/deploy/marketing
       - run: cp -r doku/ethics/public tmp/deploy/ethics
       - name: Deploy 🚀
-        working-directory: symbol-create
         uses: JamesIves/github-pages-deploy-action@4.1.5
         with:
           branch: gh-pages # The branch the action should deploy to.
