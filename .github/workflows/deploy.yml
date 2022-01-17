@@ -5,7 +5,7 @@ jobs:
   build_pdf:
     defaults:
       run:
-        working-directory: doku/ethics
+        working-directory: /home/runner/work/CoEnv/CoEnv/doku/ethics
     runs-on: ubuntu-latest
     steps:
       - name: Set up Git repository
@@ -15,7 +15,7 @@ jobs:
         uses: xu-cheng/latex-action@v2
         with:
           extra_system_packages: "inkscape"
-          working_directory: doku/ethics
+          working_directory: /home/runner/work/CoEnv/CoEnv/doku/ethics
           latexmk_shell_escape: true
           root_file: |
             coenv.tex
