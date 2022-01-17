@@ -1,12 +1,10 @@
-name: Deploy Svelte Static
-
+name: Deploy to Pages
 on: [push]
 
 jobs:
   build_pdf:
     defaults:
       run:
-        shell: bash
         working-directory: doku/ethics
     runs-on: ubuntu-latest
     steps:
@@ -38,7 +36,6 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        shell: bash
         working-directory: doku/entp-marketing
     steps:
       - uses: actions/checkout@v2
@@ -64,8 +61,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        shell: bash
-        working-directory: symbol-create
+        working-directory: symbol-creator
     steps:
       - uses: actions/checkout@v2
 
@@ -91,7 +87,7 @@ jobs:
     needs: [build_symbol,build_entp_marketing,build_pdf]
     steps:
       - run: mkdir -p "tmp/deploy"
-      - run: cp -r symbol-create/build tmp/deploy/symbol
+      - run: cp -r symbol-creator/build tmp/deploy/symbol
       - run: cp -r doku/entp-marketing/build tmp/deploy/marketing
       - run: cp -r doku/ethics/public tmp/deploy/ethics
       - name: Deploy 🚀
