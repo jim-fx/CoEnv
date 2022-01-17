@@ -25,7 +25,7 @@ jobs:
         run: ls && mv *.pdf public/
 
       - name: Install latex2html
-        run: apt update && apt-get install -y latex2html
+        run: sudo apt update && sudo apt-get install -y latex2html
 
       - name: Build HTML
         continue-on-error: true
