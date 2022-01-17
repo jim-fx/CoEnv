@@ -31,6 +31,11 @@ jobs:
         continue-on-error: true
         run: make html
 
+      - uses: actions/cache@v2
+        with:
+          path: public/
+          key: build_pdf_output
+
   build_entp_marketing:
     runs-on: ubuntu-latest
     defaults:
@@ -55,6 +60,11 @@ jobs:
       - run: "pnpm build"
         env:
           BASE_PATH: /${{ github.event.repository.name }}
+
+      - uses: actions/cache@v2
+        with:
+          path: build/
+          key: build_entp_marketing_output
 
   build_symbol:
     runs-on: ubuntu-latest
@@ -81,11 +91,20 @@ jobs:
         env:
           BASE_URL: ${{ github.event.repository.name }}
 
-  deploy:
+      - uses: actions/cache@v2
+        with:
+          path: build/
+          key: build_symbol_output
+deploy:
     runs-on: ubuntu-latest
-    needs: [build_symbol,build_entp_marketing,build_pdf]
+    needs: [build_symbol,build_entp_marketing]
     steps:
       - run: mkdir -p "tmp/deploy"
+      - uses: actions/cache@v2
+        id: restore-build
+        with:
+          path: symbol-creator/build
+          key: build_symbol_output
       - run: cp -r symbol-creator/build tmp/deploy/symbol
       - run: cp -r doku/entp-marketing/build tmp/deploy/marketing
       - run: cp -r doku/ethics/public tmp/deploy/ethics
