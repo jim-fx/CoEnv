@@ -33,7 +33,7 @@ jobs:
 
       - uses: actions/cache@v2
         with:
-          path: public/
+          path: ./public/*
           key: build_pdf_output
 
   build_entp_marketing:
@@ -93,7 +93,7 @@ jobs:
 
       - uses: actions/cache@v2
         with:
-          path: build/
+          path: ./build/*
           key: build_symbol_output
   deploy:
     runs-on: ubuntu-latest
@@ -103,7 +103,7 @@ jobs:
       - uses: actions/cache@v2
         id: restore-build
         with:
-          path: symbol-creator/build
+          path: symbol-creator/build/*
           key: build_symbol_output
       - run: cp -r symbol-creator/build tmp/deploy/symbol
       - run: cp -r doku/entp-marketing/build tmp/deploy/marketing
