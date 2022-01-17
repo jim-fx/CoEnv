@@ -5,7 +5,10 @@
  * in the OpenCV sample dir.
  */
 #include "opencv2/calib3d.hpp"
+#include "opencv2/core/operations.hpp"
+#include "opencv2/core/types.hpp"
 #include "opencv2/core/utility.hpp"
+#include "opencv2/imgproc.hpp"
 #include <algorithm>
 #include <cmath>
 #include <iostream>
@@ -13,6 +16,8 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <string>
+
+static int smallSize = 200;
 
 /**
  * Helper function to find a cosine of angle between vectors
@@ -113,7 +118,7 @@ void fourPointTransform(Mat src, Mat &dst, std::vector<Point> pts) {
       Point2f(ordered_pts[3].x, ordered_pts[3].y),
   };
 
- if (mw > mh) {
+  if (mw > mh) {
     src_[0] = Point2f(ordered_pts[3].x, ordered_pts[3].y);
     src_[1] = Point2f(ordered_pts[0].x, ordered_pts[0].y);
     src_[2] = Point2f(ordered_pts[1].x, ordered_pts[1].y);
@@ -128,65 +133,154 @@ void fourPointTransform(Mat src, Mat &dst, std::vector<Point> pts) {
   warpPerspective(src, dst, m, Size(mw * 2, mh));
 }
 
-void drawContour(std::vector<cv::Point> contour, cv::Mat dst) {
-  std::vector<cv::Point> approx;
+cv::Point rotatePointOrigin(cv::Point point, cv::Point origin, float angle) {
+  float x2 = ((point.x - origin.x) * cos(angle)) -
+             ((point.y - origin.y) * sin(angle)) + origin.x;
+  float y2 = ((point.x - origin.x) * sin(angle)) +
+             ((point.y - origin.y) * cos(angle)) + origin.y;
+  return Point(x2, y2);
+}
+
+cv::Point scalePointOrigin(cv::Point point, cv::Point origin, float scale) {
+  return Point(((point.x - origin.x) * scale) + origin.x,
+               ((point.y - origin.y) * scale) + origin.y);
+}
+
+/**
+ * Detect the marker corner inside the hexagon
+ */
+int detectCorner(std::vector<cv::Point> points, cv::Mat img) {
+
+  // Average value of the content of each mask
+  double values[6];
+
+  // This is the center of the image
+  cv::Point origin = Point(smallSize / 2.0, smallSize / 2.0);
+
+  float singleAngle = CV_PI / 3.0;
+  float maskSize = smallSize / 10.0;
+
+  // We create an initial mask, for the new masks we only need to rotate this
+  cv::Point originalMask[] = {
+      Point(origin.x, -smallSize / 20),
+      Point(origin.x + maskSize, maskSize / 2),
+      Point(origin.x, maskSize * 1.1),
+      Point(origin.x - maskSize, maskSize / 2),
+  };
+
+  // This mat will hold our mask
+  Mat maskMat = Mat::zeros(img.cols, img.rows, CV_8U);
+
+  // We will use this one to calculate to average brigtness
+  Mat testMat(img.cols, img.rows, CV_8UC3);
+
+  // Loop through all 6 masks
+  for (int j = 0; j < 6; j++) {
+
+    float angle = singleAngle * j - singleAngle / 2.0 - 0.03;
+
+    cv::Point mask[4];
+    for (int i = 0; i < 4; i++) {
+      cv::Point p = rotatePointOrigin(originalMask[i], origin, angle);
+      // Scale the mask on the x axis
+      p.x = ((p.x - origin.x) * 0.9) + origin.x;
+      mask[i] = p;
+    };
+
+    // Clear intermediate image
+    maskMat = maskMat.zeros(maskMat.rows, maskMat.cols, CV_8U);
+    testMat = testMat.zeros(testMat.rows, testMat.cols, CV_8UC3);
+
+    // Create a mask
+    fillConvexPoly(maskMat, mask, 4, 255);
+
+    // Copy the mask content to the testMat
+    img.copyTo(testMat, maskMat);
+
+    // Set the average brightness
+    values[j] = sum(mean(testMat))[0];
+  }
+
+  // Find the brightest mask
+  double maxValue = 0;
+  int maxIndex = 0;
+  for (int i = 0; i < 6; i++) {
+    double value = values[i];
+    if (value > maxValue) {
+      maxValue = value;
+      maxIndex = i;
+    }
+  }
+
+  /* putText(testMat, std::to_string(maxIndex) +" - "+std::to_string(maxValue), origin, FONT_HERSHEY_PLAIN, 1.0, */
+  /*         Scalar(255, 0, 0)); */
+
+
+  return maxIndex;
+}
+
+void decodeHexagon(std::vector<cv::Point> contour, cv::Mat dst) {
+  std::vector<cv::Point> points;
 
   // Approximate contour with accuracy proportional
   // to the contour perimeter
-  cv::approxPolyDP(cv::Mat(contour), approx,
+  cv::approxPolyDP(cv::Mat(contour), points,
                    cv::arcLength(cv::Mat(contour), true) * 0.02, true);
 
   // Skip small or non-convex objects
   if (std::fabs(cv::contourArea(contour) < 100 ||
-                !cv::isContourConvex(approx)) ||
-      approx.size() != 6) {
+                !cv::isContourConvex(points)) ||
+      points.size() != 6) {
     return;
   }
 
   // Get the cosines of all corners
   std::vector<double> cos;
   for (int j = 2; j < 6 + 1; j++)
-    cos.push_back(angle(approx[j % 6], approx[j - 2], approx[j - 1]));
+    cos.push_back(angle(points[j % 6], points[j - 2], points[j - 1]));
 
   // Sort ascending the cosine values
   std::sort(cos.begin(), cos.end());
 
   // Draw center
   std::vector<cv::Point> centerRect(4);
-
-  if (_distance(approx[0], approx[1]) >= _distance(approx[1], approx[2])) {
-    centerRect[0] = approx[1];
-    centerRect[1] = approx[3];
-    centerRect[2] = approx[4];
-    centerRect[3] = approx[0];
+  if (_distance(points[0], points[1]) >= _distance(points[1], points[2])) {
+    centerRect[0] = points[1];
+    centerRect[1] = points[3];
+    centerRect[2] = points[4];
+    centerRect[3] = points[0];
   } else {
-    centerRect[0] = approx[0];
-    centerRect[1] = approx[1];
-    centerRect[2] = approx[3];
-    centerRect[3] = approx[4];
+    centerRect[0] = points[0];
+    centerRect[1] = points[1];
+    centerRect[2] = points[3];
+    centerRect[3] = points[4];
   }
-
-  Mat warped_image;
-  fourPointTransform(dst, warped_image, centerRect);
-
-  Mat warped_image_size;
-
-  resize(warped_image, warped_image_size, Size(200, 200), 0, 0, INTER_CUBIC);
-
-  Mat warped_image_grey;
-  cvtColor(warped_image_size, warped_image_grey, cv::COLOR_BGR2GRAY);
-
-  Mat warped_image_thresh;
-  threshold(warped_image_grey, warped_image_thresh, 100, 255, THRESH_BINARY);
-
-  imshow("Warped Image", warped_image_thresh);
 
   polylines(dst, centerRect, true, Scalar(120, 120, 120), 1, 150, 0);
 
+  Mat warped_image;
+  // Stretch the image to fit the stuff
+  fourPointTransform(dst, warped_image, centerRect);
+
+  // Resize the output to 200 x 200
+  resize(warped_image, warped_image, Size(200, 200), 0, 0, INTER_CUBIC);
+
+  // Convert the image to grayscale
+  cvtColor(warped_image, warped_image, cv::COLOR_BGR2GRAY);
+
+  // Auto threshold the image to two color
+  threshold(warped_image, warped_image, 100, 255, THRESH_OTSU);
+
+  int cornerIndex = detectCorner(points, warped_image);
   for (int x = 0; x < 6; x++) {
-    Point p = approx[x];
+    Point p = points[x];
+    if(cornerIndex == x){
     cv::circle(dst, p, 4 + x, ScalarHSV2BGR(x * 20, 120, 200), 5);
+    }
   }
+
+  imshow("Out", dst);
+
 }
 
 void detectShape(cv::Mat src) {
@@ -198,19 +292,17 @@ void detectShape(cv::Mat src) {
   cv::Mat bw;
   cv::Canny(gray, bw, 0, 50, 5);
 
-  // Find contours
-  std::vector<std::vector<cv::Point>> contours;
-  cv::findContours(bw.clone(), contours, cv::RETR_EXTERNAL,
+  // Find hexagons
+  std::vector<std::vector<cv::Point>> hexagons;
+  cv::findContours(bw.clone(), hexagons, cv::RETR_EXTERNAL,
                    cv::CHAIN_APPROX_SIMPLE);
 
-  std::sort(contours.begin(), contours.end(), compareAreas);
+  std::sort(hexagons.begin(), hexagons.end(), compareAreas);
 
-  if (contours.size() > 0) {
-    drawContour(contours[0], src);
+  /* cv::imshow("dst", src); */
+  if (hexagons.size() > 0) {
+    return decodeHexagon(hexagons[0], src);
   }
-
-  cv::imshow("dst", src);
-  cv::waitKey(10);
 }
 
 int main() {
@@ -222,6 +314,8 @@ int main() {
     if (cam.read(frame) == true) {
       detectShape(frame);
     }
+
+    cv::waitKey(300);
   }
   return 0;
 }

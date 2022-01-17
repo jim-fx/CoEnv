@@ -5,6 +5,7 @@
 	let radius = 30;
 
 	let lines = [];
+ let outerRing = []
 
 	function createPolygon(r, a) {
 		let v0 = [0, r];
@@ -46,7 +47,10 @@
 	function createSigil() {
 		const faceAmount = 6;
 
-		const outerRing = createPolygon(radius, faceAmount);
+		const outerRing = createPolygon(radius, faceAmount).map(l => {
+    l.enabled = true;
+    return l
+  });
 
 		const innerRing = createPolygon(radius * 0.5, faceAmount);
 
@@ -54,7 +58,7 @@
 
 		const outerStar = createStar(radius * 0.5, radius, faceAmount);
 
-		return [...outerRing, ...innerRing, ...innerStar, ...outerStar];
+		return [...innerRing, ...innerStar, ...outerStar];
 	}
 
 	function chunkArray(arr, chunkSize) {
@@ -85,6 +89,7 @@
 	}
 
 	function init() {
+   outerRing = createPolygon(radius,6);
 		lines = [
 			...lines.map((line) => {
 				line.enabled = Math.random() > 0.5;
@@ -130,15 +135,18 @@
 	viewBox="0 0 100 100"
 	style={`background-color: ${color ? `rgba(${color.r}, ${color.g}, ${color.b}, 0.1)` : 'black'}`}
 >
+	{#each outerRing as line}
+		<line {...line} />
+	{/each}
 	{#each lines as line, i}
 		<line class:disabled={!line.enabled} {...line} />
 		<line class="clicker" on:click|preventDefault={() => handleClick(i)} {...line} />
 	{/each}
 
 	<polygon
-		points="50,{50 + radius - 5} 55,{50 + radius - 2.6} 50,{50 + radius + 0.2} 45,{50 +
+		points="50,{50 + radius - 7} 58,{50 + radius - 4} 50,{50 + radius} 42,{50 +
 			radius -
-			2.6}"
+			4}"
 	/>
 </svg>
 <pre>
@@ -202,6 +210,7 @@ COLOR: <span class="color" style="background-color: #{id};"></span>
 
 	svg > line.disabled {
 		stroke-width: 0.2px;
+  opacity: 0.5;
 	}
 
 	pre {
