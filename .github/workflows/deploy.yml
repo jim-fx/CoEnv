@@ -35,7 +35,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: ethics-output
-          path: public/*
+          path: doku/ethics/public/*
           retention-days: 1
 
   build_entp_marketing:
@@ -67,7 +67,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: marketing-output
-          path: build/*
+          path: doku/entp-marketing/build/*
           retention-days: 1
 
   build_symbol:
@@ -99,7 +99,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: symbol-creator-output
-          path: build/*
+          path: symbol-creator/build
           retention-days: 1
   deploy:
     runs-on: ubuntu-latest
