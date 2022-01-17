@@ -31,10 +31,12 @@ jobs:
         continue-on-error: true
         run: make html
 
-      - uses: actions/cache@v2
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v2
         with:
-          path: ./public/*
-          key: build_pdf_output
+          name: ethics-output
+          path: public
+          retention-days: 1
 
   build_entp_marketing:
     runs-on: ubuntu-latest
@@ -61,10 +63,12 @@ jobs:
         env:
           BASE_PATH: /${{ github.event.repository.name }}
 
-      - uses: actions/cache@v2
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v2
         with:
-          path: build/
-          key: build_entp_marketing_output
+          name: marketing-output
+          path: build
+          retention-days: 1
 
   build_symbol:
     runs-on: ubuntu-latest
@@ -91,22 +95,34 @@ jobs:
         env:
           BASE_URL: ${{ github.event.repository.name }}
 
-      - uses: actions/cache@v2
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v2
         with:
-          path: ./build/*
-          key: build_symbol_output
+          name: symbol-creator-output
+          path: build
+          retention-days: 1
   deploy:
     runs-on: ubuntu-latest
     needs: [build_symbol,build_entp_marketing]
     steps:
       - run: mkdir -p "tmp/deploy"
-      - uses: actions/cache@v2
-        id: restore-build
+      - name: download artifacts
+        uses: actions/download-artifact@v2
         with:
-          path: symbol-creator/build/*
-          key: build_symbol_output
+          name: symbol-creator-output
+          path: symbol-creator/build
       - run: cp -r symbol-creator/build tmp/deploy/symbol
+      - name: download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: marketing-output
+          path: doku/entp-marketing/build
       - run: cp -r doku/entp-marketing/build tmp/deploy/marketing
+      - name: download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: ethics-output
+          path: doku/ethics/public
       - run: cp -r doku/ethics/public tmp/deploy/ethics
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@4.1.5
