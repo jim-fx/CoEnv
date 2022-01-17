@@ -1,0 +1,192 @@
+\documentclass{article}
+
+% Metadata section
+
+\newcommand{\theauthor}{M. Richter, K. Schuh}
+\newcommand{\thetitle}{Ethische Bewertung von CoEnv}
+\title{\thetitle}
+\author{\theauthor} 
+\date{\today}
+
+% Package Section
+
+% - Set document language
+\usepackage[german]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+% - Use german quotes
+\usepackage{csquotes}
+\MakeOuterQuote{"}
+\usepackage{amsmath}
+\usepackage{multicol}
+\usepackage{blindtext}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{fancyhdr}
+\usepackage{float}
+% Layout section
+
+\pagestyle{fancy}
+\fancyhf{}
+\makeatletter
+\rhead{\theauthor}
+\makeatother
+\lhead{\thetitle}
+\rfoot{Seite \thepage}
+
+\setlength{\parindent}{0em}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Das Ziel dieses Textes ist es, unser Produkt CoEnv unter ethischen Gesichtspunkten zu bewerten. CoEnv ist ein modulares Ökosystem aus kleineren Produkten welche das Zusammenarbeiten in geteilten Umgebungen erleichtern sollen.
+\end{abstract}
+
+\newpage
+\tableofcontents
+\newpage
+
+\section{Einleitung}
+\begin{multicols}{2}\hbadness=100000
+CoEnv ist ein im Rahmen des Kurses "Functional Objects for Shared Environments" entstandenes Konzept.
+\\[2ex]
+"Shared Environments" sind in unserer Definition Umgebungen oder Orte die Infrastruktur bieten welche Menschen bei der Arbeit unterstützt, meistens Strom, Internet, Küche, Toiletten, Arbeitsplätze und eventuell auch Werkstätten. Dabei gibt es in diesen Umgebungen meistens keine festen Hierarchien.
+\\[2ex]
+Einige Beispiele für Shared Environments wären HackerSpaces, Coworking Spaces und der Open Space des Studienganges Code\&Context an der TH-Köln.
+\\[2ex]
+Die Vorteile von Shared Environments sind vielfältig. Sie ermöglichen ihren Nutzer*innen den direkten Austausch mit anderen Personen aus ihrem professionellen Umfeld \cite{Cabral2016}, die manche in ihrem normalen und besonders im Covid-19 Homeoffice, Arbeitsalltag missen \cite{Lengen2021-xe}.
+\\[2ex]
+Aus unserer eigenen Erfahrung führen geteilte Umgebungen aber auch oft zu ambigen Situation in deren die gewünschte oder erlaubte Nutzung von Räumen und Objekten nicht geklärt ist und Unsicherheit entsteht.
+\\[2ex]
+In eher klassischen Büros ist diese erlaubte Nutzung von Objekten und Räumen relativ klar durch Hierarchien und Zuständigkeitsbereiche geregelt, wie z.B. "Das hier ist mein Büro", "Der Drucker gehört dem Büro der Grafikabteilung" oder "Dieser Konferenzraum ist jeden Tag von 10 bis 11 Uhr für ein Stand-up Meeting belegt".
+\\[2ex]
+Unser Konzept setzt an diesem Punkt an, indem wir eine Symbolsprache entworfen haben. Diese Symbole werden für jede Umgebung eigens entwickelt und können von Computern und Menschen gelesen werden. Es ist meiner Meinung nach wichtig die Symbole für jede Umgebung neu zu entwerfen, da jede Umgebung andere Eigenschaften braucht im Räume und Objekte zu beschreiben.
+\\[2ex]
+Eine weitere, noch nicht wirklich ausformulierte Benutzung der Symbole könnte darin liegen das sich Personen auch selber mit ihnen versehen können, um zum Beispiel zu kommunizieren dass sie im Moment nicht angesprochen werden wollen oder auch im Gegenteil, dass sie gerade Lust auf Kommunikation haben. 
+\end{multicols}
+
+% Symbolsprache wird Kontextabhängig entwickelt... 
+% Symbole kommuniziere Eigenschaft/Attribute von Objekten und Räumen
+% RoomBoard und Cube kommunizieren dann diese Eigenschaften der Symbole
+
+\newpage
+
+\subsection{Die Objekte}
+Unser Konzept besteht aus der Symbolsprache und zwei Objekten die über die Symbole die Eigenschaften von Räumen oder Arbeitsplätzen kommunizieren.
+
+\subsubsection*{Die Symbole}
+Die Symbole sind Hexagone aus Holz mit einem Durchmesser von 6 Zentimetern. Jedes besteht aus 24 einzelnen Strichen, die entweder gefüllt oder nicht gefüllt sein können. Dadurch kann man die Symbole in 24 Bits übersetzen, was wiederum 3 Bytes sind und so können mit dieser Grundform circa 16.8 Millionen Varianten dargestellt werden. Nebenbei hat das auch den interessanten Effekt das ein Symbol den kompletten sRGB Farbraum abdecken kann. Um die Orientierung der Symbole darzustellen, befindet sich an einer Ecke des Hexagons ein Marker.
+
+\begin{figure}[h]
+\centering
+\begin{subfigure}{.4\textwidth}
+  \centering
+  \includegraphics[width=.7\linewidth]{images/sigil-base.png}
+  \caption{Grundraster für die Symbole}
+  \label{fig:sub1}
+\end{subfigure}
+\begin{subfigure}{.4\textwidth}
+  \centering
+  \includegraphics[width=.7\linewidth]{images/sigil-example.png}
+  \caption{Beispielsymbol für Konzentration}
+  \label{fig:sub2}
+\end{subfigure}
+\caption{Symbol Beispiele}
+\label{fig:test}
+\end{figure}
+
+
+\subsubsection*{RoomBoard} 
+Das RoomBoard ist ein interaktiver Indikator in Form einer kompatakten Anzeigetafel, welche an Räumen und dem Arbeitsplatz positioniert wird. Dieses kann auf einem Display Informationen zum Raum oder Arbeitsplatz sowie einen beliebigen Status wiedergeben; dies wird durch die Kombination mit den Siegeln ermöglicht. Durch Anbringen an das RoomBoard können sie dieses um einen Status-Indikator mit individualisierbarer Bedeutung erweitern. Das RoomBoard selbst soll seinen Status wie die Belegung eines Raumes durch Vernetzung mit einem System zur Organisation kommunizieren können, wie einem Raumplaner.
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=.3\linewidth]{images/roomboard-concept.png}
+  \caption{RoomBoard Konzept}
+\end{figure}
+\newpage
+\subsubsection*{Cube}
+Der Cube ist ein würfelförmiges optisches Element, welches ebenfalls in Kompatiblität mit den Siegeln funktioniert und den Arbeitsplatz durch ein im Inneren befindliches Leuchtmittel um eine Lichtquelle erweitert. Diese soll für eine Beleuchtung sorgen, welche eine passende und gesunde Atmosphäre am Arbeitplatz schafft. Der Cube ist durch sein variables Licht zum einen ein effektiver Status-Indikator, und bietet zum anderen eine gleichmäßigere und angepasste Beleuchtung des Arbeitsumfeldes. Der Cube ist portabel und kann von Studierenden frei an den Arbeitsplatz mitgenommen werden und dieses auch markieren, zum Beispiel für Mitglieder des Projekt-Teams.
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=.3\linewidth]{images/cube-concept.png}
+  \caption{Cube Konzept}
+\end{figure}
+
+\subsection{Innovation von CoEnv}
+
+Der interessanteste Aspekt von CoEnv ist der Perspektivenwechsel weg von einer Aufgaben- und Task basierten Raumplanung hin zu einer Bedürfnisorientierten. Entgegen klassischen Methoden, die oft statisch sind und sich nicht weiterentwickeln, sind wir der Überzeugung das solche Umgebungen Lösungen brauchen die sich organisch mit der Zeit und den Menschen, welche sie benutzen weiterentwickeln. 
+% Activating Environments, scheinbare Sicherheit durch gelebte Konventionen, Unsicherheit führt zu aktiver Auseinandersetzung mit den Bedürnissen der Mitmenschen.
+
+\subsection{Chancen die durch CoEnv entstehen}
+
+\subsubsection*{Umgang mit Bedürfnissen}
+Dadurch das wir die sonst unterbewusst benutzte Sprache von Erlaubtem und Gewünschten durch die Symbole sichtbar machen kommt es, hoffen wir, zu einem direkteren und aktiveren Auseinandersetzen mit den Bedürfnissen der anderen. Es sollte aber auch das Ankommen von neuen Personen in einer Umgebung leichter machen, indem sie sofort einen groben Überblick über die sich in Benutzung findenden Symbole und Regeln hat.
+\subsubsection*{Barrierefreiheit}
+Um zu verstehen welche Dinge in einer geteilten Umgebung erlaubt und gewünscht sind, braucht es oft einige Zeit und besonders für Menschen die Schwierigkeiten haben die Nuancen der menschlichen nonverbalen Kommunikation zu verstehen ist das ein schwieriges Unterfangen. Dadurch das wir durch die Symbole zumindest einen Teil dieser impliziten Regeln offenlegen können wir es diesen Menschen einfacher machen sich in der geteilten Umgebung zurechtzufinden.
+\subsubsection*{Asynchronität}
+Auch wenn eine Person einmal nicht an ihrem Arbeitsplatz ist, können die Symbole weiter kommunizieren wie es sich mit diesem Arbeitsplatz verhält.
+
+\section{Akteur Analyse}
+
+
+\subsection{Leitende Personen}
+
+Auch wenn die meisten Shared Environments flache Hierarchien vorweisen, muss es doch Personen geben die administrative Aufgaben erledigen, wie zum Beispiel neues Equipment anzuschaffen.
+
+\subsubsection*{Ziele}
+
+\emph{Zufriedenheit} aller Nutzer*innen des Shared Environments, \emph{niedrige Kosten} in der Anschaffung und Erhaltung von Equipment und Möbeln.
+
+\subsubsection*{Mittel}
+
+\emph{Auswahl der Möbel und des Equipments} mit Fokus auf Nutzbarkeit und Preis. 
+
+\subsection{Gäste}
+
+Gäste sind Personen die nicht auf Dauer in Shared Environments verweilen
+
+\subsubsection*{Ziele}
+\emph{Vermeidung unangenehmer Situation} die bei eventuellen Konflikten entstehen könnten. \emph{Leichtes Zurechtfinden} in der unbekannten Umgebung. 
+
+\subsubsection*{Mittel}
+\emph{Fragen der Nutzer*innen} des Shared Environments. \emph{Lesen von Informationsmaterial}.  
+
+\subsection{Nutzer*innen}
+
+Nutzer*innen sind Personen die das Shared Environments regelmäßig aufsuchen.
+
+\subsubsection*{Ziele}
+\emph{Effizientes Zurechtkommen} in dem Shared Environments, minimal kognitive Last bei dem Erledigen alltäglicher Aufgaben. \emph{Konfliktvermeidung} mit anderen Nutzer*innen.
+
+\subsubsection*{Mittel}
+\emph{Kommunizieren} mit den anderen Nutzer*innen, einhalten von vorhandenen expliziten und impliziten Regeln.
+
+\subsection{CoEnv Team}
+Auch wir als CoEnv Team sind Teil des Gesamtzusammenhanges und dürfen uns nicht wegdenken.
+
+\subsubsection*{Ziele}
+\emph{Bereitstellen von CoEnv}. \emph{Bestehen der Kurse} die sich mit CoEnv beschäftigen.
+
+\subsubsection*{Mittel}
+\emph{Arbeiten an CoEnv}.
+
+% \section{Folgenanalyse}
+
+
+\section{Positive Folgen die durch CoEnv entstehen}
+Wenn CoEnv so umgesetzt werden kann wie wir es uns vorstellen, könnte dies enorm positive Folgen für die Arbeitsumgebungen die es benutzen haben. Durch den Fokus auf die Bedürfnisse und persönliche Grenzen der Nutzer*innen könnte es zu einer \emph{stärkeren Rücksichtnahme} untereinander führen.
+
+\section{Zusatzarbeit...}
+
+Nope.
+
+\newpage
+
+\bibliographystyle{apalike}
+\bibliography{sample}
+
+\end{document} 

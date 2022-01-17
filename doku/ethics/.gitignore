@@ -1,0 +1,20 @@
+# Temporary Files of latex compilation
+*.log
+*.aux
+*.blg
+*.fdb_latexmk
+*.fls
+*.out
+*.gz
+*.toc
+*.bbl
+*.pdf
+*.nav
+*.snm
+
+svg-inkscape
+
+public/*
+!public/.nojekyll
+!public/style.css
+!public/fonts

@@ -1,0 +1,43 @@
+@import "main.css";
+
+@font-face {
+  font-family: 'Computer Modern';
+  font-weight: normal;
+  src: url('fonts/cmr10.woff') format('woff');
+}
+@font-face {
+  font-family: 'Computer Modern';
+  font-weight: bold;
+  src: url('fonts/cmbx10.woff') format('woff');
+}
+body {
+  margin: 50px auto;
+  max-width: 50em;
+  font-family: "Computer Modern", serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    color: white;
+    background-color: #0c0c0c;
+  }
+  a[href] {
+    color: #8d8dff;
+  }
+  img {
+    filter: contrast(2.5) brightness(2.5);
+  }
+}
+
+.CENTER {
+  text-align: center;
+}
+
+.XTINY		{ font-size : xx-small }
+.TINY		{ font-size : x-small  }
+.SCRIPTSIZE	{ font-size : smaller  }
+.FOOTNOTESIZE	{ font-size : small    }
+.XLARGE		{ font-size : large; font-weight: bolder;    }
+.XXLARGE		{ font-size : x-large  }
+.HUGE		{ font-size : larger   }
+.XHUGE		{ font-size : xx-large }
