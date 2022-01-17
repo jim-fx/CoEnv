@@ -18,7 +18,7 @@ jobs:
           working_directory: ./doku/ethics/
           pre_compile: pwd && ls -la && cd .. && ls -la
           latexmk_shell_escape: true
-          root_file: *.tex
+          root_file: "*.tex"
           glob_root_file: true
 
       - name: Move PDFs
