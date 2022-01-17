@@ -127,6 +127,7 @@ jobs:
           name: ethics-output
           path: doku/ethics/public
       - run: cp -r doku/ethics/public tmp/deploy/ethics
+      - run: touch tmp/deploy/.nojekyll
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@4.1.5
         with:
