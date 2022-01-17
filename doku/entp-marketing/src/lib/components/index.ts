@@ -1,0 +1,6 @@
+export { default as SlideTitle } from "./SlideTitle.svelte"
+export { default as SlideProgress } from "./SlideProgress.svelte"
+export { default as SlideChanger } from "./SlideChanger.svelte"
+export { default as BarChart } from "./BarChart.svelte"
+export { default as SlideTime } from "./SlideTime.svelte"
+export { default as Slide } from "./Slide.svelte"

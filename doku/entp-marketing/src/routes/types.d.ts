@@ -1,0 +1,3 @@
+interface HTMLAttributes {
+  center: boolean
+}

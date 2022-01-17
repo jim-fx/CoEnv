@@ -212,10 +212,6 @@ int detectCorner(std::vector<cv::Point> points, cv::Mat img) {
     }
   }
 
-  /* putText(testMat, std::to_string(maxIndex) +" - "+std::to_string(maxValue), origin, FONT_HERSHEY_PLAIN, 1.0, */
-  /*         Scalar(255, 0, 0)); */
-
-
   return maxIndex;
 }
 
