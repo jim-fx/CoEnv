@@ -95,7 +95,7 @@ jobs:
         with:
           path: build/
           key: build_symbol_output
-deploy:
+  deploy:
     runs-on: ubuntu-latest
     needs: [build_symbol,build_entp_marketing]
     steps:
