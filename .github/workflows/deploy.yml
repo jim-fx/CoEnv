@@ -15,7 +15,6 @@ jobs:
         uses: xu-cheng/latex-action@v2
         with:
           extra_system_packages: "inkscape"
-          working_directory: ./doku/ethics/
           pre_compile: pwd && ls -la && cd .. && ls -la
           latexmk_shell_escape: true
           root_file: *.tex
