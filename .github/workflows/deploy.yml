@@ -53,12 +53,12 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-
-      
+
       - uses: pnpm/action-setup@v2.0.1
         with:
           version: 6.0.2
           run_install: true
-          
+
       - run: "pnpm build"
         env:
           BASE_PATH: /${{ github.event.repository.name }}
@@ -103,7 +103,7 @@ jobs:
           retention-days: 1
   deploy:
     runs-on: ubuntu-latest
-    needs: [build_symbol,build_entp_marketing,build_ethics]
+    needs: [build_symbol, build_entp_marketing, build_ethics]
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v2
@@ -114,22 +114,22 @@ jobs:
         with:
           name: symbol-creator-output
           path: symbol-creator/build
-      - run: cp -r symbol-creator/build tmp/deploy/symbol
+      - run: cp -r symbol-creator/build .github/pages/symbol
       - name: download artifacts
         uses: actions/download-artifact@v2
         with:
           name: marketing-output
           path: doku/entp-marketing/build
-      - run: cp -r doku/entp-marketing/build tmp/deploy/marketing
+      - run: cp -r doku/entp-marketing/build .github/pages/marketing
       - name: download artifacts
         uses: actions/download-artifact@v2
         with:
           name: ethics-output
           path: doku/ethics/public
-      - run: cp -r doku/ethics/public tmp/deploy/ethics
-      - run: touch tmp/deploy/.nojekyll
+      - run: cp -r doku/ethics/public .github/pages/ethics
+      - run: cd .github/pages && for d in ./* ; do cd $d && touch .nojekyll && cd ..; done
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@4.1.5
         with:
           branch: gh-pages # The branch the action should deploy to.
-          folder: tmp/deploy # The folder the action should deploy.
+          folder: .github/pages # The folder the action should deploy.
