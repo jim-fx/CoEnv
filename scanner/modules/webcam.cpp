@@ -23,6 +23,8 @@ VideoCapture createWebcam(int index) {
   double dHeight =
       cap.get(CAP_PROP_FRAME_HEIGHT); // get the height of frames of the video
 
+  cap.set(CAP_PROP_AUTO_EXPOSURE, 1);
+
   cout << "Resolution of the video : " << dWidth << " x " << dHeight << endl;
 
   return cap;

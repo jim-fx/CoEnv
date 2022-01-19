@@ -1,6 +1,7 @@
 #include "modules/helpers.hpp"
 #include "modules/webcam.hpp"
 #include "opencv2/calib3d.hpp"
+#include "opencv2/core.hpp"
 #include "opencv2/core/hal/interface.h"
 #include "opencv2/core/operations.hpp"
 #include "opencv2/core/types.hpp"
@@ -33,7 +34,7 @@ int meanValueInMask(Mat input, Point *inputMask) {
 /**
  * Detect the marker corner inside the hexagon
  */
-int detectCorner(std::vector<Point> points, Mat img) {
+int detectMarker(std::vector<Point> points, Mat img) {
 
   // Average value of the content of each mask
   int values[6];
@@ -109,16 +110,15 @@ void boxFromLine(Point *output, Point *line, float width) {
   output[3] = p4;
 }
 
-std::vector<bool> detectLines(Mat inputImg) {
+void sortLines(bool *lines, int indexOfMarker) { bool temp[18]; }
 
-  std::vector<bool> lines(18);
-
+void detectLines(bool *lines, Mat inputImg) {
 
   Point origin(smallSize / 2, smallSize / 2);
 
   float singleAngle = CV_PI / 3.0;
-  float maskSize = smallSize / 20.0;
-  float shrinkValue = smallSize / 20.0;
+  float maskSize = smallSize / 10.0;
+  float shrinkValue = smallSize / 10.0;
 
   Point originalMask[3][2]{
       {Point(origin.x + shrinkValue, origin.y),
@@ -161,34 +161,41 @@ std::vector<bool> detectLines(Mat inputImg) {
   }
 
   int totalSum = 0;
+  int maxValue = 0;
+  int minValue = 256;
   for (int i = 0; i < 19; i++) {
-    totalSum += boxValues[i];
+    int v = boxValues[i];
+    totalSum += v;
+    maxValue = max(maxValue, v);
+    minValue = min(minValue, v);
   }
 
   int meanAverage = totalSum / 18;
+  int centerAverage = (minValue + maxValue) / 2;
 
-  std::cout << meanAverage << std::endl;
+  std::cout << "mean:" << meanAverage << " center:" << centerAverage
+            << std::endl;
 
   Mat debugMat;
   cvtColor(inputImg, debugMat, COLOR_GRAY2RGB);
 
   for (int j = 0; j < 19; j++) {
 
-    std::vector<Point> vecBox = std::vector<Point>({boxes[j][0], boxes[j][1], boxes[j][2], boxes[j][3]});
+    std::vector<Point> vecBox = std::vector<Point>(
+        {boxes[j][0], boxes[j][1], boxes[j][2], boxes[j][3]});
 
-    if (boxValues[j] > meanAverage) {
-      std::cout << "H: " << boxValues[j] << std::endl;
+    bool isOn = boxValues[j] > centerAverage;
+
+    lines[j] = isOn;
+
+    if (isOn) {
       polylines(debugMat, vecBox, true, Scalar(255, 0, 0), 1);
     } else {
-      std::cout << "L: " << boxValues[j] << std::endl;
       polylines(debugMat, vecBox, true, Scalar(0, 255, 0), 1);
     }
   }
 
   imshow("Standard Hough Line Transform", debugMat);
-
-
-  return lines;
 }
 
 void decodeHexagon(std::vector<cv::Point> contour, cv::Mat dst) {
@@ -241,16 +248,20 @@ void decodeHexagon(std::vector<cv::Point> contour, cv::Mat dst) {
   // Auto threshold the image to two color
   threshold(warped_image, warped_image, 100, 255, THRESH_OTSU);
 
-  int cornerIndex = detectCorner(points, warped_image);
+  int markerIndex = detectMarker(points, warped_image);
   for (int x = 0; x < 6; x++) {
     Point p = points[x];
-    if (cornerIndex == x) {
+    if (markerIndex == x) {
       cv::circle(dst, p, 4 + x, ScalarHSV2BGR(x * 20, 120, 200), 5);
     }
   }
 
   // Detect the detectLines
-  std::vector<bool> lines = detectLines(warped_image);
+  bool lines[18];
+  detectLines(lines, warped_image);
+
+  // Arrange the array into the correct way
+  sortLines(lines, markerIndex);
 }
 
 void detectShape(cv::Mat src) {
@@ -269,23 +280,22 @@ void detectShape(cv::Mat src) {
 
   std::sort(hexagons.begin(), hexagons.end(), compareAreas);
 
-  /* cv::imshow("dst", src); */
   if (hexagons.size() > 0) {
     return decodeHexagon(hexagons[0], src);
   }
 }
 
 int main() {
-  VideoCapture cam = createWebcam(2);
+  VideoCapture cam = createWebcam(0);
 
   while (true) {
-    cv::Mat frame;
+    Mat frame;
 
     if (cam.read(frame) == true) {
       detectShape(frame);
     }
 
-    cv::waitKey(300);
+    cv::waitKey(100);
   }
   return 0;
 }
