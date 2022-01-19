@@ -1,10 +1,7 @@
-/**
- * Simple shape detector program.
- * It loads an image and tries to find simple shapes (rectangle, triangle,
- * circle, etc) in it. This program is a modified version of `squares.cpp` found
- * in the OpenCV sample dir.
- */
+#include "modules/helpers.hpp"
+#include "modules/webcam.hpp"
 #include "opencv2/calib3d.hpp"
+#include "opencv2/core/hal/interface.h"
 #include "opencv2/core/operations.hpp"
 #include "opencv2/core/types.hpp"
 #include "opencv2/core/utility.hpp"
@@ -12,147 +9,34 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
-#include <modules/webcam.hpp>
+#include <iterator>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <ostream>
 #include <string>
+#include <vector>
 
 static int smallSize = 200;
 
-/**
- * Helper function to find a cosine of angle between vectors
- * from pt0->pt1 and pt0->pt2
- */
-static double angle(cv::Point pt1, cv::Point pt2, cv::Point pt0) {
-  double dx1 = pt1.x - pt0.x;
-  double dy1 = pt1.y - pt0.y;
-  double dx2 = pt2.x - pt0.x;
-  double dy2 = pt2.y - pt0.y;
-  return (dx1 * dx2 + dy1 * dy2) /
-         sqrt((dx1 * dx1 + dy1 * dy1) * (dx2 * dx2 + dy2 * dy2) + 1e-10);
-}
+int meanValueInMask(Mat input, Point *inputMask) {
 
-/**
- * Helper function to display text in the center of a contour
- */
-void setLabel(cv::Mat &im, const std::string label,
-              std::vector<cv::Point> &contour) {
-  int fontface = cv::FONT_HERSHEY_SIMPLEX;
-  double scale = 0.4;
-  int thickness = 1;
-  int baseline = 0;
+  Mat maskMat = Mat::zeros(input.cols, input.rows, CV_8U);
 
-  cv::Size text = cv::getTextSize(label, fontface, scale, thickness, &baseline);
-  cv::Rect r = cv::boundingRect(contour);
+  fillConvexPoly(maskMat, inputMask, 4, 255);
 
-  cv::Point pt(r.x + ((r.width - text.width) / 2),
-               r.y + ((r.height + text.height) / 2));
-  cv::rectangle(im, pt + cv::Point(0, baseline),
-                pt + cv::Point(text.width, -text.height), CV_RGB(255, 255, 255),
-                cv::FILLED);
-  cv::putText(im, label, pt, fontface, scale, CV_RGB(0, 0, 0), thickness, 8);
-}
+  // Set the average brightness
+  int v = sum(mean(input, maskMat))[0];
 
-Scalar ScalarHSV2BGR(uchar H, uchar S, uchar V) {
-  Mat rgb;
-  Mat hsv(1, 1, CV_8UC3, Scalar(H, S, V));
-  cvtColor(hsv, rgb, cv::COLOR_HSV2BGR);
-  return Scalar(rgb.data[0], rgb.data[1], rgb.data[2]);
-}
-
-bool compareAreas(std::vector<cv::Point> a, std::vector<cv::Point> b) {
-  return contourArea(a) > contourArea(b);
-}
-
-bool compareXCords(Point p1, Point p2) { return (p1.x < p2.x); }
-
-bool compareYCords(Point p1, Point p2) { return (p1.y < p2.y); }
-
-bool compareDistance(std::pair<Point, Point> p1, std::pair<Point, Point> p2) {
-  return (norm(p1.first - p1.second) < norm(p2.first - p2.second));
-}
-
-void orderPoints(std::vector<cv::Point> inpts,
-                 std::vector<cv::Point> &ordered) {
-  sort(inpts.begin(), inpts.end(), compareXCords);
-  std::vector<Point> lm(inpts.begin(), inpts.begin() + 2);
-  std::vector<Point> rm(inpts.end() - 2, inpts.end());
-
-  sort(lm.begin(), lm.end(), compareYCords);
-  Point tl(lm[0]);
-  Point bl(lm[1]);
-  std::vector<std::pair<Point, Point>> tmp;
-  for (size_t i = 0; i < rm.size(); i++) {
-    tmp.push_back(std::make_pair(tl, rm[i]));
-  }
-
-  sort(tmp.begin(), tmp.end(), compareDistance);
-  Point tr(tmp[0].second);
-  Point br(tmp[1].second);
-
-  ordered.push_back(tl);
-  ordered.push_back(tr);
-  ordered.push_back(br);
-  ordered.push_back(bl);
-}
-double _distance(Point p1, Point p2) {
-  return sqrt(((p1.x - p2.x) * (p1.x - p2.x)) +
-              ((p1.y - p2.y) * (p1.y - p2.y)));
-}
-
-void fourPointTransform(Mat src, Mat &dst, std::vector<Point> pts) {
-  std::vector<Point> ordered_pts = pts;
-
-  double wa = _distance(ordered_pts[2], ordered_pts[3]);
-  double wb = _distance(ordered_pts[1], ordered_pts[0]);
-  double mw = max(wa, wb);
-
-  double ha = _distance(ordered_pts[1], ordered_pts[2]);
-  double hb = _distance(ordered_pts[0], ordered_pts[3]);
-  double mh = max(ha, hb);
-
-  Point2f src_[] = {
-      Point2f(ordered_pts[0].x, ordered_pts[0].y),
-      Point2f(ordered_pts[1].x, ordered_pts[1].y),
-      Point2f(ordered_pts[2].x, ordered_pts[2].y),
-      Point2f(ordered_pts[3].x, ordered_pts[3].y),
-  };
-
-  if (mw > mh) {
-    src_[0] = Point2f(ordered_pts[3].x, ordered_pts[3].y);
-    src_[1] = Point2f(ordered_pts[0].x, ordered_pts[0].y);
-    src_[2] = Point2f(ordered_pts[1].x, ordered_pts[1].y);
-    src_[3] = Point2f(ordered_pts[2].x, ordered_pts[2].y);
-  }
-
-  float xOff = mw / 2;
-
-  Point2f dst_[] = {Point2f(0 + xOff, 0), Point2f(mw - 1 + xOff, 0),
-                    Point2f(mw - 1 + xOff, mh - 1), Point2f(0 + xOff, mh - 1)};
-  Mat m = getPerspectiveTransform(src_, dst_);
-  warpPerspective(src, dst, m, Size(mw * 2, mh));
-}
-
-cv::Point rotatePointOrigin(cv::Point point, cv::Point origin, float angle) {
-  float x2 = ((point.x - origin.x) * cos(angle)) -
-             ((point.y - origin.y) * sin(angle)) + origin.x;
-  float y2 = ((point.x - origin.x) * sin(angle)) +
-             ((point.y - origin.y) * cos(angle)) + origin.y;
-  return Point(x2, y2);
-}
-
-cv::Point scalePointOrigin(cv::Point point, cv::Point origin, float scale) {
-  return Point(((point.x - origin.x) * scale) + origin.x,
-               ((point.y - origin.y) * scale) + origin.y);
+  return v;
 }
 
 /**
  * Detect the marker corner inside the hexagon
  */
-int detectCorner(std::vector<cv::Point> points, cv::Mat img) {
+int detectCorner(std::vector<Point> points, Mat img) {
 
   // Average value of the content of each mask
-  double values[6];
+  int values[6];
 
   // This is the center of the image
   cv::Point origin = Point(smallSize / 2.0, smallSize / 2.0);
@@ -168,44 +52,28 @@ int detectCorner(std::vector<cv::Point> points, cv::Mat img) {
       Point(origin.x - maskSize, maskSize / 2),
   };
 
-  // This mat will hold our mask
-  Mat maskMat = Mat::zeros(img.cols, img.rows, CV_8U);
-
-  // We will use this one to calculate to average brigtness
-  Mat testMat(img.cols, img.rows, CV_8UC3);
-
   // Loop through all 6 masks
   for (int j = 0; j < 6; j++) {
 
     float angle = singleAngle * j - singleAngle / 2.0 - 0.03;
 
-    cv::Point mask[4];
+    Point mask[4];
     for (int i = 0; i < 4; i++) {
-      cv::Point p = rotatePointOrigin(originalMask[i], origin, angle);
+      Point p = rotatePointOrigin(originalMask[i], origin, angle);
       // Scale the mask on the x axis
       p.x = ((p.x - origin.x) * 0.9) + origin.x;
       mask[i] = p;
     };
 
-    // Clear intermediate image
-    maskMat = maskMat.zeros(maskMat.rows, maskMat.cols, CV_8U);
-    testMat = testMat.zeros(testMat.rows, testMat.cols, CV_8UC3);
-
-    // Create a mask
-    fillConvexPoly(maskMat, mask, 4, 255);
-
-    // Copy the mask content to the testMat
-    img.copyTo(testMat, maskMat);
-
     // Set the average brightness
-    values[j] = sum(mean(testMat))[0];
+    values[j] = meanValueInMask(img, mask);
   }
 
   // Find the brightest mask
-  double maxValue = 0;
+  int maxValue = 0;
   int maxIndex = 0;
   for (int i = 0; i < 6; i++) {
-    double value = values[i];
+    int value = values[i];
     if (value > maxValue) {
       maxValue = value;
       maxIndex = i;
@@ -213,6 +81,114 @@ int detectCorner(std::vector<cv::Point> points, cv::Mat img) {
   }
 
   return maxIndex;
+}
+
+void boxFromLine(Point *output, Point *line, float width) {
+
+  // Create a vector from the 2 points
+  Point vec = line[0] - line[1];
+
+  // Rotate 90deg
+  vec = Point(vec.y, vec.x * -1);
+
+  // Length of vector
+  double length = sqrt(pow(vec.x, 2) + pow(vec.y, 2)) / width;
+
+  // Normalize vector length
+  vec.x /= length;
+  vec.y /= length;
+
+  Point p1 = line[0] + vec;
+  Point p2 = line[0] - vec;
+  Point p3 = line[1] - vec;
+  Point p4 = line[1] + vec;
+
+  output[0] = p1;
+  output[1] = p2;
+  output[2] = p3;
+  output[3] = p4;
+}
+
+std::vector<bool> detectLines(Mat inputImg) {
+
+  std::vector<bool> lines(18);
+
+
+  Point origin(smallSize / 2, smallSize / 2);
+
+  float singleAngle = CV_PI / 3.0;
+  float maskSize = smallSize / 20.0;
+  float shrinkValue = smallSize / 20.0;
+
+  Point originalMask[3][2]{
+      {Point(origin.x + shrinkValue, origin.y),
+       Point(origin.x + smallSize / 4.0 - shrinkValue, origin.y)},
+      {Point(origin.x + smallSize / 4.0 + shrinkValue, origin.y),
+       Point(origin.x + smallSize / 2.0 - shrinkValue, origin.y)},
+      {Point(origin.x + smallSize / 4.0 - shrinkValue / 2.0,
+             origin.y + shrinkValue),
+       Point(origin.x + smallSize / 8.0 + shrinkValue / 2.0,
+             origin.y + smallSize / 4.0 - shrinkValue)}};
+
+  Point boxes[18][4];
+  std::vector<int> boxValues{};
+  boxValues.reserve(19);
+
+  for (int i = 0; i < 7; i++) {
+
+    float angle = singleAngle * i - 0.03;
+
+    Point line1[2]{rotatePointOrigin(originalMask[0][0], origin, angle),
+                   rotatePointOrigin(originalMask[0][1], origin, angle)};
+    Point line2[2]{rotatePointOrigin(originalMask[1][0], origin, angle),
+                   rotatePointOrigin(originalMask[1][1], origin, angle)};
+    Point line3[2]{rotatePointOrigin(originalMask[2][0], origin, angle),
+                   rotatePointOrigin(originalMask[2][1], origin, angle)};
+
+    boxFromLine(boxes[i * 3 + 0], line1, maskSize);
+    boxFromLine(boxes[i * 3 + 1], line2, maskSize);
+    boxFromLine(boxes[i * 3 + 2], line3, maskSize);
+
+    int v1 = meanValueInMask(inputImg, boxes[i * 3 + 0]);
+    int v2 = meanValueInMask(inputImg, boxes[i * 3 + 1]);
+    int v3 = meanValueInMask(inputImg, boxes[i * 3 + 2]);
+
+    std::cout << v1 << " - " << v2 << " - " << v3 << std::endl;
+
+    boxValues.push_back(v1);
+    boxValues.push_back(v2);
+    boxValues.push_back(v3);
+  }
+
+  int totalSum = 0;
+  for (int i = 0; i < 19; i++) {
+    totalSum += boxValues[i];
+  }
+
+  int meanAverage = totalSum / 18;
+
+  std::cout << meanAverage << std::endl;
+
+  Mat debugMat;
+  cvtColor(inputImg, debugMat, COLOR_GRAY2RGB);
+
+  for (int j = 0; j < 19; j++) {
+
+    std::vector<Point> vecBox = std::vector<Point>({boxes[j][0], boxes[j][1], boxes[j][2], boxes[j][3]});
+
+    if (boxValues[j] > meanAverage) {
+      std::cout << "H: " << boxValues[j] << std::endl;
+      polylines(debugMat, vecBox, true, Scalar(255, 0, 0), 1);
+    } else {
+      std::cout << "L: " << boxValues[j] << std::endl;
+      polylines(debugMat, vecBox, true, Scalar(0, 255, 0), 1);
+    }
+  }
+
+  imshow("Standard Hough Line Transform", debugMat);
+
+
+  return lines;
 }
 
 void decodeHexagon(std::vector<cv::Point> contour, cv::Mat dst) {
@@ -252,8 +228,6 @@ void decodeHexagon(std::vector<cv::Point> contour, cv::Mat dst) {
     centerRect[3] = points[4];
   }
 
-  polylines(dst, centerRect, true, Scalar(120, 120, 120), 1, 150, 0);
-
   Mat warped_image;
   // Stretch the image to fit the stuff
   fourPointTransform(dst, warped_image, centerRect);
@@ -270,13 +244,13 @@ void decodeHexagon(std::vector<cv::Point> contour, cv::Mat dst) {
   int cornerIndex = detectCorner(points, warped_image);
   for (int x = 0; x < 6; x++) {
     Point p = points[x];
-    if(cornerIndex == x){
-    cv::circle(dst, p, 4 + x, ScalarHSV2BGR(x * 20, 120, 200), 5);
+    if (cornerIndex == x) {
+      cv::circle(dst, p, 4 + x, ScalarHSV2BGR(x * 20, 120, 200), 5);
     }
   }
 
-  imshow("Out", dst);
-
+  // Detect the detectLines
+  std::vector<bool> lines = detectLines(warped_image);
 }
 
 void detectShape(cv::Mat src) {
