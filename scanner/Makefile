@@ -1,5 +1,5 @@
 build: 
-	g++ shape-detect.cpp modules/*.cpp -o .output/sigil-scanner -I/home/jim/COCO/16_FunctionObjects/scanner/ `pkg-config --cflags --libs opencv4` 
+	g++ shape-detect.cpp modules/*.cpp -o .output/sigil-scanner -I/home/jim/COCO/CoEnv/scanner/ `pkg-config --cflags --libs opencv4` 
 
 run: build
 	killall sigil-scanner; \

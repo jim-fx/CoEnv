@@ -5,7 +5,7 @@
 	let radius = 30;
 
 	let lines = [];
- let outerRing = []
+	let outerRing = [];
 
 	function createPolygon(r, a) {
 		let v0 = [0, r];
@@ -44,21 +44,29 @@
 		});
 	}
 
+	function shiftArray(arr: unknown[], shift: number) {
+		const amount = arr.length;
+
+		const temp = new Array(amount);
+
+		for (let i = 0; i < amount; i++) {
+			const index = (i + shift) % amount;
+			temp[i] = arr[index];
+		}
+
+		return temp;
+	}
+
 	function createSigil() {
 		const faceAmount = 6;
 
-		const outerRing = createPolygon(radius, faceAmount).map(l => {
-    l.enabled = true;
-    return l
-  });
+		const outerStar = shiftArray(createStar(radius * 0.5, radius, faceAmount), 3);
 
-		const innerRing = createPolygon(radius * 0.5, faceAmount);
+		const innerRing = shiftArray(createPolygon(radius * 0.5, faceAmount), 2);
 
-		const innerStar = createStar(0, radius * 0.5, faceAmount);
+		const innerStar = shiftArray(createStar(0, radius * 0.5, faceAmount), 2);
 
-		const outerStar = createStar(radius * 0.5, radius, faceAmount);
-
-		return [...innerRing, ...innerStar, ...outerStar];
+		return [...outerStar, ...innerRing, ...innerStar];
 	}
 
 	function chunkArray(arr, chunkSize) {
@@ -81,7 +89,15 @@
 	function update() {
 		numbers = lines.map((line) => (line.enabled ? 1 : 0));
 
-		const chars = chunkArray(numbers, 4).map((c) => parseInt(c.join(''), 2));
+		bytes = chunkArray(numbers, 4);
+
+		if (bytes.length && bytes[bytes.length - 1].length != 4) {
+			bytes[bytes.length - 1] = [...bytes[bytes.length - 1], 0, 0];
+		}
+
+		const chars = [...bytes, [0, 0, 0, 0]].map((c) => parseInt(c.join(''), 2));
+
+		debugger;
 
 		id = chars.map((num) => num.toString(16).toUpperCase()).join('');
 
@@ -89,7 +105,7 @@
 	}
 
 	function init() {
-   outerRing = createPolygon(radius,6);
+		outerRing = createPolygon(radius, 6);
 		lines = [
 			...lines.map((line) => {
 				line.enabled = Math.random() > 0.5;
@@ -100,8 +116,9 @@
 	}
 
 	let numbers = [];
+	let bytes = [];
 	let id = '';
-	let color;
+	let color: string;
 
 	function handleClick(i) {
 		lines[i].enabled = !lines[i].enabled;
@@ -138,20 +155,19 @@
 	{#each outerRing as line}
 		<line {...line} />
 	{/each}
+
 	{#each lines as line, i}
-		<line class:disabled={!line.enabled} {...line} />
+		<line class:disabled={!line.enabled} id={i} {...line} />
 		<line class="clicker" on:click|preventDefault={() => handleClick(i)} {...line} />
 	{/each}
 
 	<polygon
-		points="50,{50 + radius - 7} 58,{50 + radius - 4} 50,{50 + radius} 42,{50 +
-			radius -
-			4}"
+		points="50,{50 + radius - 7} 58,{50 + radius - 4} 50,{50 + radius} 42,{50 + radius - 4}"
 	/>
 </svg>
 <pre>
 		<code>
-BITS: {numbers.join("")}
+BITS: {bytes.map(b => b.join("")).join(" ")}
 HEX: {id}
 COLOR: <span class="color" style="background-color: #{id};"></span>
 		</code>
@@ -210,7 +226,7 @@ COLOR: <span class="color" style="background-color: #{id};"></span>
 
 	svg > line.disabled {
 		stroke-width: 0.2px;
-  opacity: 0.5;
+		opacity: 0.5;
 	}
 
 	pre {
