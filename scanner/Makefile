@@ -6,7 +6,7 @@ build-debug:
 
 run: build
 	killall sigil-scanner; \
-	./.output/sigil-scanner & 
+	./.output/sigil-scanner 0 & 
 
 dev:
 	make run;
