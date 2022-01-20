@@ -1,18 +1,13 @@
+#include "opencv2/imgproc.hpp"
+#include "opencv2/opencv.hpp"
+
 #include "modules/helpers.hpp"
 #include "modules/webcam.hpp"
-#include "opencv2/calib3d.hpp"
-#include "opencv2/core.hpp"
-#include "opencv2/core/hal/interface.h"
-#include "opencv2/core/operations.hpp"
-#include "opencv2/core/types.hpp"
-#include "opencv2/core/utility.hpp"
-#include "opencv2/imgproc.hpp"
+
 #include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <iterator>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 #include <ostream>
 #include <string>
 #include <vector>
@@ -110,7 +105,54 @@ void boxFromLine(Point *output, Point *line, float width) {
   output[3] = p4;
 }
 
-void sortLines(bool *lines, int indexOfMarker) { bool temp[18]; }
+Point midpoint(const Point &a, const Point &b) {
+  Point ret;
+  ret.x = (a.x + b.x) / 2;
+  ret.y = (a.y + b.y) / 2;
+  return ret;
+}
+
+void sortLines(bool *lines, int indexOfMarker) {
+
+  bool temp[18];
+
+  int constantOffset = 3;
+
+  // Shift the array so the marker position is corrected
+  for (int i = 0; i < 18; i++) {
+    int index = (constantOffset + i + indexOfMarker * 3) % 18;
+    temp[i] = lines[index];
+  }
+
+
+  for (int i = 0; i < 6; i++) {
+    lines[0 + i] = temp[i * 3 + 1];
+    lines[6 + ((i+1)%6)] = temp[i * 3 + 2];
+    lines[12 + ((i+1)%6)] = temp[i * 3 + 0];
+  }
+}
+
+void printBoolArray(bool *array, int split = 4) {
+  for (int i = 0; i < 18; i++) {
+    int out = array[i] == true ? 1 : 0;
+    std::cout << out;
+    if (i % split == split - 1) {
+      std::cout << " ";
+    }
+  }
+  std::cout << std::endl;
+}
+
+void centerText(Mat output, std::string text, Scalar color, Point p) {
+  int font = cv::FONT_HERSHEY_PLAIN;
+
+  Size textSize = cv::getTextSize(text, font, 1, 1, 0);
+
+  p.x -= textSize.width / 2;
+  p.y -= textSize.height / 2;
+
+  cv::putText(output, text, p, font, 1.0, Scalar(0, 255, 0), 1, false);
+}
 
 void detectLines(bool *lines, Mat inputImg) {
 
@@ -121,10 +163,13 @@ void detectLines(bool *lines, Mat inputImg) {
   float shrinkValue = smallSize / 10.0;
 
   Point originalMask[3][2]{
+      // Center -> MiddleRight
       {Point(origin.x + shrinkValue, origin.y),
        Point(origin.x + smallSize / 4.0 - shrinkValue, origin.y)},
+      // MiddleRight -> Left
       {Point(origin.x + smallSize / 4.0 + shrinkValue, origin.y),
        Point(origin.x + smallSize / 2.0 - shrinkValue, origin.y)},
+      // MiddleRIght -> Bottom
       {Point(origin.x + smallSize / 4.0 - shrinkValue / 2.0,
              origin.y + shrinkValue),
        Point(origin.x + smallSize / 8.0 + shrinkValue / 2.0,
@@ -134,7 +179,7 @@ void detectLines(bool *lines, Mat inputImg) {
   std::vector<int> boxValues{};
   boxValues.reserve(19);
 
-  for (int i = 0; i < 7; i++) {
+  for (int i = 0; i < 9; i++) {
 
     float angle = singleAngle * i - 0.03;
 
@@ -153,7 +198,7 @@ void detectLines(bool *lines, Mat inputImg) {
     int v2 = meanValueInMask(inputImg, boxes[i * 3 + 1]);
     int v3 = meanValueInMask(inputImg, boxes[i * 3 + 2]);
 
-    std::cout << v1 << " - " << v2 << " - " << v3 << std::endl;
+    // std::cout << v1 << " - " << v2 << " - " << v3 << std::endl;
 
     boxValues.push_back(v1);
     boxValues.push_back(v2);
@@ -173,13 +218,13 @@ void detectLines(bool *lines, Mat inputImg) {
   int meanAverage = totalSum / 18;
   int centerAverage = (minValue + maxValue) / 2;
 
-  std::cout << "mean:" << meanAverage << " center:" << centerAverage
-            << std::endl;
+  /* std::cout << "mean:" << meanAverage << " center:" << centerAverage
+            << std::endl;*/
 
   Mat debugMat;
   cvtColor(inputImg, debugMat, COLOR_GRAY2RGB);
 
-  for (int j = 0; j < 19; j++) {
+  for (int j = 0; j < 18; j++) {
 
     std::vector<Point> vecBox = std::vector<Point>(
         {boxes[j][0], boxes[j][1], boxes[j][2], boxes[j][3]});
@@ -188,12 +233,19 @@ void detectLines(bool *lines, Mat inputImg) {
 
     lines[j] = isOn;
 
-    if (isOn) {
-      polylines(debugMat, vecBox, true, Scalar(255, 0, 0), 1);
-    } else {
-      polylines(debugMat, vecBox, true, Scalar(0, 255, 0), 1);
-    }
+    Scalar color = j == 0 ? Scalar(0, 0, 255)
+                   : isOn ? Scalar(255, 0, 0)
+                          : Scalar(0, 255, 0);
+
+    Point center = midpoint(vecBox[0], vecBox[2]);
+
+    centerText(debugMat, std::to_string(j), color, center);
+
+    polylines(debugMat, vecBox, true, color, 1);
   }
+
+  std::cout << "a: ";
+  printBoolArray(lines, 3);
 
   imshow("Standard Hough Line Transform", debugMat);
 }
@@ -239,6 +291,9 @@ void decodeHexagon(std::vector<cv::Point> contour, cv::Mat dst) {
   // Stretch the image to fit the stuff
   fourPointTransform(dst, warped_image, centerRect);
 
+  // FLip the image on the y axis
+  cv::flip(warped_image, warped_image, 1);
+
   // Resize the output to 200 x 200
   resize(warped_image, warped_image, Size(200, 200), 0, 0, INTER_CUBIC);
 
@@ -257,11 +312,14 @@ void decodeHexagon(std::vector<cv::Point> contour, cv::Mat dst) {
   }
 
   // Detect the detectLines
-  bool lines[18];
+  bool lines[20];
   detectLines(lines, warped_image);
 
   // Arrange the array into the correct way
   sortLines(lines, markerIndex);
+
+  std::cout << "b: ";
+  printBoolArray(lines);
 }
 
 void detectShape(cv::Mat src) {
