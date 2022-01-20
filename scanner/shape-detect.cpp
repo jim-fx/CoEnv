@@ -348,14 +348,14 @@ int main(int argc, char **argv) {
     camIndex = std::atoi(camIndexArg);
   }
 
-  Camera *webcam = new Camera();
+  Camera webcam;
 
-  webcam->createCamera(camIndex, false);
+  webcam.createCamera(camIndex, false);
 
   while (true) {
     Mat frame;
 
-    if (webcam->capture(frame) == true) {
+    if (webcam.capture(frame) == true) {
       detectShape(frame);
     }
 
