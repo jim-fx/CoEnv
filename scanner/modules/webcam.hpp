@@ -3,6 +3,11 @@
 
 #include "opencv2/opencv.hpp"
 using namespace cv;
-VideoCapture createWebcam(int);
+
+class Camera {
+public:
+  bool capture(Mat output);
+  void createCamera(int index, bool isPi);
+};
 
 #endif
