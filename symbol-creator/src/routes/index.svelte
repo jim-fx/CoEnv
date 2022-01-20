@@ -123,13 +123,12 @@
 		update();
 	}
 
- function center(line:any){
-   return {
-    x: (line.x1 + line.x2)/2,
-    y: (line.y1+line.y2)/2,
-  }
-
-}
+	function center(line: any) {
+		return {
+			x: (line.x1 + line.x2) / 2,
+			y: (line.y1 + line.y2) / 2
+		};
+	}
 
 	function clear() {
 		lines = lines.map((line) => {
@@ -166,7 +165,11 @@
 		<line class:disabled={!line.enabled} id={i} {...line} />
 		<line class="clicker" on:click|preventDefault={() => handleClick(i)} {...line} />
 
-  <text text-anchor="middle" dominant-baseline="middle" x={center(line).x} y={center(line).y}>{i}</text>
+		{#if false}
+			<text text-anchor="middle" dominant-baseline="middle" x={center(line).x} y={center(line).y}
+				>{i}</text
+			>
+		{/if}
 	{/each}
 
 	<polygon
@@ -217,13 +220,13 @@ COLOR: <span class="color" style="background-color: #{id};"></span>
 		background-color: black;
 	}
 
- svg > text{
-   text-align: center;
-  fill: red;
-  text-anchor: center;
-  font-size: 3px;
-  pointer-events: none;
-}
+	svg > text {
+		text-align: center;
+		fill: red;
+		text-anchor: center;
+		font-size: 3px;
+		pointer-events: none;
+	}
 
 	svg > line {
 		stroke: white;
