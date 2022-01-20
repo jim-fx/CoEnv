@@ -124,11 +124,10 @@ void sortLines(bool *lines, int indexOfMarker) {
     temp[i] = lines[index];
   }
 
-
   for (int i = 0; i < 6; i++) {
     lines[0 + i] = temp[i * 3 + 1];
-    lines[6 + ((i+1)%6)] = temp[i * 3 + 2];
-    lines[12 + ((i+1)%6)] = temp[i * 3 + 0];
+    lines[6 + ((i + 1) % 6)] = temp[i * 3 + 2];
+    lines[12 + ((i + 1) % 6)] = temp[i * 3 + 0];
   }
 }
 
@@ -244,9 +243,6 @@ void detectLines(bool *lines, Mat inputImg) {
     polylines(debugMat, vecBox, true, color, 1);
   }
 
-  std::cout << "a: ";
-  printBoolArray(lines, 3);
-
   imshow("Standard Hough Line Transform", debugMat);
 }
 
@@ -318,7 +314,6 @@ void decodeHexagon(std::vector<cv::Point> contour, cv::Mat dst) {
   // Arrange the array into the correct way
   sortLines(lines, markerIndex);
 
-  std::cout << "b: ";
   printBoolArray(lines);
 }
 
