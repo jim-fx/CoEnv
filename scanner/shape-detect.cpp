@@ -343,14 +343,12 @@ int main(int argc, char **argv) {
   int camIndex = 0;
   char *camIndexArg = argv[1];
   int camIndexSize = sizeof(camIndexArg);
-  std::cout << camIndexSize << std::endl;
-  if (camIndexSize == 0) {
+  std::cout << *camIndexArg << std::endl;
+  if (camIndexSize != 0) {
     camIndex = std::atoi(camIndexArg);
   }
 
   VideoCapture cam = createWebcam(camIndex);
-
-  std::cout << argv[1] << std::endl;
 
   while (true) {
     Mat frame;

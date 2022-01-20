@@ -9,6 +9,8 @@ VideoCapture createWebcam(int index) {
   // Open the default video camera
   VideoCapture cap;
 
+  cout << "Trying to open the camera:" << index << endl;
+
   cap.open(index);
 
   // if not success, exit program
