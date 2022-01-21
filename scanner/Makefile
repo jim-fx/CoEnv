@@ -1,5 +1,5 @@
 build: 
-	g++ shape-detect.cpp modules/*.cpp -o .output/sigil-scanner -l/usr/local/include/raspicam/ -I/home/jim/COCO/CoEnv/scanner/ `pkg-config --cflags --libs opencv4` 
+	g++ src/main.cpp  -o build/scanner -I./include `pkg-config --cflags --libs opencv4` 
 
 build-debug: 
 	g++ -g shape-detect.cpp modules/*.cpp -o .output/sigil-scanner -l/usr/local/include/raspicam -I/home/jim/COCO/CoEnv/scanner/ `pkg-config --cflags --libs opencv4` 

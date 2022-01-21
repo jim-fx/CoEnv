@@ -1,12 +1,12 @@
 #include <opencv2/opencv.hpp>
 using namespace cv;
 
-cv::Point scalePointOrigin(cv::Point point, cv::Point origin, float scale) {
+Point scalePointOrigin(cv::Point point, cv::Point origin, float scale) {
   return Point(((point.x - origin.x) * scale) + origin.x,
                ((point.y - origin.y) * scale) + origin.y);
 }
 
-cv::Point rotatePointOrigin(cv::Point point, cv::Point origin, float angle) {
+Point rotatePointOrigin(cv::Point point, cv::Point origin, float angle) {
   float x2 = ((point.x - origin.x) * cos(angle)) -
              ((point.y - origin.y) * sin(angle)) + origin.x;
   float y2 = ((point.x - origin.x) * sin(angle)) +

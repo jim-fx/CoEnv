@@ -5,8 +5,8 @@ using namespace cv;
 
 double angle(cv::Point pt1, cv::Point pt2, cv::Point pt0);
 void fourPointTransform(Mat src, Mat &dst, std::vector<Point> pts);
-cv::Point scalePointOrigin(cv::Point point, cv::Point origin, float scale);
-cv::Point rotatePointOrigin(cv::Point point, cv::Point origin, float angle);
+Point scalePointOrigin(cv::Point point, cv::Point origin, float scale);
+Point rotatePointOrigin(cv::Point point, cv::Point origin, float angle);
 void orderPoints(std::vector<cv::Point> inpts, std::vector<cv::Point> &ordered);
 
 double _distance(Point p1, Point p2);

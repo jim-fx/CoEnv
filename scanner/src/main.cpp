@@ -4,13 +4,7 @@
 #include "helpers.h"
 #include "webcam.h"
 
-#include <algorithm>
-#include <cmath>
-#include <iostream>
-#include <iterator>
-#include <ostream>
-#include <string>
-#include <vector>
+using namespace cv;
 
 static int smallSize = 200;
 

@@ -1,0 +1,8 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+includedir=${prefix}/include
+libdir=${exec_prefix}/raspicam
+
+Name: raspicam
+Cflags: -I${includedir}/raspicam
+Libs: -L${libdir} -lraspicam -lraspicam_cv
