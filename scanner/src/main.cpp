@@ -1,8 +1,8 @@
 #include "opencv2/imgproc.hpp"
 #include "opencv2/opencv.hpp"
 
-#include "modules/helpers.hpp"
-#include "modules/webcam.hpp"
+#include "helpers.h"
+#include "webcam.h"
 
 #include <algorithm>
 #include <cmath>
@@ -348,14 +348,12 @@ int main(int argc, char **argv) {
     camIndex = std::atoi(camIndexArg);
   }
 
-  Camera webcam;
-
-  webcam.createCamera(camIndex, false);
+  createCamera(camIndex, false);
 
   while (true) {
     Mat frame;
 
-    if (webcam.capture(frame) == true) {
+    if (captureCamera(frame) == true) {
       detectShape(frame);
     }
 

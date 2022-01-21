@@ -1,0 +1,15 @@
+cmake_minimum_required(VERSION 3.10)
+PROJECT(Scanner)
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake-modules)
+
+find_package(OpenCV REQUIRED)
+find_package(raspicam REQUIRED)
+
+add_executable(Scanner src/main.cpp include/helpers.h include/webcam.h)
+target_include_directories(Scanner PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_link_libraries(Scanner ${Raspicam_CV_LIBS})
+target_link_libraries(Scanner ${OpenCV_LIBS})
+
+

@@ -1,6 +1,3 @@
-#ifndef HELPERS_H
-#define HELPERS_H
-
 #include <opencv2/opencv.hpp>
 using namespace cv;
 
@@ -55,7 +52,6 @@ void fourPointTransform(Mat src, Mat &dst, std::vector<Point> pts) {
   warpPerspective(src, dst, m, Size(mw * 2, mh));
 }
 
-
 /**
  * Helper function to find a cosine of angle between vectors
  * from pt0->pt1 and pt0->pt2
@@ -68,7 +64,6 @@ double angle(cv::Point pt1, cv::Point pt2, cv::Point pt0) {
   return (dx1 * dx2 + dy1 * dy2) /
          sqrt((dx1 * dx1 + dy1 * dy1) * (dx2 * dx2 + dy2 * dy2) + 1e-10);
 }
-
 
 Scalar ScalarHSV2BGR(uchar H, uchar S, uchar V) {
   Mat rgb;
@@ -87,8 +82,8 @@ bool compareDistance(std::pair<Point, Point> p1, std::pair<Point, Point> p2) {
 
 bool compareXCords(Point p1, Point p2) { return (p1.x < p2.x); }
 bool compareYCords(Point p1, Point p2) { return (p1.y < p2.y); }
-  void orderPoints(std::vector<cv::Point> inpts,
-                   std::vector<cv::Point> &ordered) {
+void orderPoints(std::vector<cv::Point> inpts,
+                 std::vector<cv::Point> &ordered) {
   sort(inpts.begin(), inpts.end(), compareXCords);
   std::vector<Point> lm(inpts.begin(), inpts.begin() + 2);
   std::vector<Point> rm(inpts.end() - 2, inpts.end());
@@ -110,5 +105,3 @@ bool compareYCords(Point p1, Point p2) { return (p1.y < p2.y); }
   ordered.push_back(br);
   ordered.push_back(bl);
 }
-
-#endif
