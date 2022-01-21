@@ -240,7 +240,7 @@ void detectLines(bool *lines, Mat inputImg) {
     polylines(debugMat, vecBox, true, color, 1);
   }
 
-  imshow("Standard Hough Line Transform", debugMat);
+  /* imshow("Standard Hough Line Transform", debugMat); */
 }
 
 void decodeHexagon(std::vector<cv::Point> contour, cv::Mat dst) {
