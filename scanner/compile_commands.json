@@ -1,0 +1,12 @@
+[
+{
+  "directory": "/home/jim/COCO/CoEnv/scanner/build",
+  "command": "/usr/bin/c++ -I../include -isystem /usr/local/include/opencv4 -o CMakeFiles/scanner.dir/src/main.cpp.o -c /home/jim/COCO/CoEnv/scanner/src/main.cpp",
+  "file": "/home/jim/COCO/CoEnv/scanner/src/main.cpp"
+},
+{
+  "directory": "/home/jim/COCO/CoEnv/scanner/build",
+  "command": "/usr/bin/cc -I../include -isystem /usr/local/include/opencv4 -o CMakeFiles/scanner.dir/include/helpers.c.o -c /home/jim/COCO/CoEnv/scanner/include/helpers.c",
+  "file": "/home/jim/COCO/CoEnv/scanner/include/helpers.c"
+}
+]

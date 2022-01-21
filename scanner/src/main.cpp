@@ -4,7 +4,10 @@
 #include "helpers.h"
 #include "webcam.h"
 
+#include <unistd.h>
+
 using namespace cv;
+using namespace std;
 
 static int smallSize = 200;
 
@@ -312,6 +315,11 @@ void decodeHexagon(std::vector<cv::Point> contour, cv::Mat dst) {
 }
 
 void detectShape(cv::Mat src) {
+
+  cout << "-------------" << endl;
+  cout << "Analyzing Frame" << endl;
+  cout << "Channels: " << src.channels() << endl;
+
   // Convert to grayscale
   cv::Mat gray;
   cv::cvtColor(src, gray, cv::COLOR_BGR2GRAY);
@@ -329,6 +337,8 @@ void detectShape(cv::Mat src) {
 
   if (hexagons.size() > 0) {
     return decodeHexagon(hexagons[0], src);
+  } else {
+    cout << "No Result" << endl;
   }
 }
 
@@ -347,11 +357,11 @@ int main(int argc, char **argv) {
   while (true) {
     Mat frame;
 
-    if (captureCamera(frame) == true) {
+    if (captureCamera(frame)) {
       detectShape(frame);
     }
 
-    cv::waitKey(100);
+    usleep(500 * 1000);
   }
   return 0;
 }

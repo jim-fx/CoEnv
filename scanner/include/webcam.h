@@ -8,5 +8,5 @@
 
 using namespace cv;
 
-bool captureCamera(Mat);
+bool captureCamera(Mat &);
 void createCamera(int, bool);
