@@ -1,3 +1,0 @@
-/home/jim/COCO/CoEnv/scanner/build/CMakeFiles/rebuild_cache.dir
-/home/jim/COCO/CoEnv/scanner/build/CMakeFiles/edit_cache.dir
-/home/jim/COCO/CoEnv/scanner/build/CMakeFiles/scanner.dir
