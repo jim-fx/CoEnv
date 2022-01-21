@@ -3,7 +3,7 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/modules/**",
+                "${workspaceFolder}/include/**",
                 "/usr/include/opencv4"
             ],
             "defines": [],
@@ -11,7 +11,8 @@
             "cStandard": "gnu17",
             "cppStandard": "c++20",
             "intelliSenseMode": "linux-gcc-x64",
-            "compileCommands": "${workspaceFolder}/compile_commands.json"
+            "compileCommands": "${workspaceFolder}/compile_commands.json",
+            "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],
     "version": 4

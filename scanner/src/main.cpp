@@ -1,10 +1,12 @@
 #include "opencv2/imgproc.hpp"
 #include "opencv2/opencv.hpp"
+#include <raspicam/raspicam_still_cv.h>
 
 #include "helpers.h"
 #include "webcam.h"
 
 using namespace cv;
+using namespace std;
 
 static int smallSize = 200;
 
@@ -23,19 +25,19 @@ int meanValueInMask(Mat input, Point *inputMask) {
 /**
  * Detect the marker corner inside the hexagon
  */
-int detectMarker(std::vector<Point> points, Mat img) {
+int detectMarker(vector<Point> points, Mat img) {
 
   // Average value of the content of each mask
   int values[6];
 
   // This is the center of the image
-  cv::Point origin = Point(smallSize / 2.0, smallSize / 2.0);
+  Point origin = Point(smallSize / 2.0, smallSize / 2.0);
 
   float singleAngle = CV_PI / 3.0;
   float maskSize = smallSize / 10.0;
 
   // We create an initial mask, for the new masks we only need to rotate this
-  cv::Point originalMask[] = {
+  Point originalMask[] = {
       Point(origin.x, -smallSize / 20),
       Point(origin.x + maskSize, maskSize / 2),
       Point(origin.x, maskSize * 1.1),
@@ -128,23 +130,23 @@ void sortLines(bool *lines, int indexOfMarker) {
 void printBoolArray(bool *array, int split = 4) {
   for (int i = 0; i < 18; i++) {
     int out = array[i] == true ? 1 : 0;
-    std::cout << out;
+    cout << out;
     if (i % split == split - 1) {
-      std::cout << " ";
+      cout << " ";
     }
   }
-  std::cout << std::endl;
+  cout << endl;
 }
 
-void centerText(Mat output, std::string text, Scalar color, Point p) {
-  int font = cv::FONT_HERSHEY_PLAIN;
+void centerText(Mat output, string text, Scalar color, Point p) {
+  int font = FONT_HERSHEY_PLAIN;
 
-  Size textSize = cv::getTextSize(text, font, 1, 1, 0);
+  Size textSize = getTextSize(text, font, 1, 1, 0);
 
   p.x -= textSize.width / 2;
   p.y -= textSize.height / 2;
 
-  cv::putText(output, text, p, font, 1.0, Scalar(0, 255, 0), 1, false);
+  putText(output, text, p, font, 1.0, Scalar(0, 255, 0), 1, false);
 }
 
 void detectLines(bool *lines, Mat inputImg) {
@@ -169,7 +171,7 @@ void detectLines(bool *lines, Mat inputImg) {
              origin.y + smallSize / 4.0 - shrinkValue)}};
 
   Point boxes[18][4];
-  std::vector<int> boxValues{};
+  vector<int> boxValues{};
   boxValues.reserve(19);
 
   for (int i = 0; i < 9; i++) {
@@ -191,7 +193,7 @@ void detectLines(bool *lines, Mat inputImg) {
     int v2 = meanValueInMask(inputImg, boxes[i * 3 + 1]);
     int v3 = meanValueInMask(inputImg, boxes[i * 3 + 2]);
 
-    // std::cout << v1 << " - " << v2 << " - " << v3 << std::endl;
+    // cout << v1 << " - " << v2 << " - " << v3 << endl;
 
     boxValues.push_back(v1);
     boxValues.push_back(v2);
@@ -211,15 +213,15 @@ void detectLines(bool *lines, Mat inputImg) {
   int meanAverage = totalSum / 18;
   int centerAverage = (minValue + maxValue) / 2;
 
-  /* std::cout << "mean:" << meanAverage << " center:" << centerAverage
-            << std::endl;*/
+  /* cout << "mean:" << meanAverage << " center:" << centerAverage
+            << endl;*/
 
   Mat debugMat;
   cvtColor(inputImg, debugMat, COLOR_GRAY2RGB);
 
   for (int j = 0; j < 18; j++) {
 
-    std::vector<Point> vecBox = std::vector<Point>(
+    vector<Point> vecBox = vector<Point>(
         {boxes[j][0], boxes[j][1], boxes[j][2], boxes[j][3]});
 
     bool isOn = boxValues[j] > centerAverage;
@@ -232,7 +234,7 @@ void detectLines(bool *lines, Mat inputImg) {
 
     Point center = midpoint(vecBox[0], vecBox[2]);
 
-    centerText(debugMat, std::to_string(j), color, center);
+    centerText(debugMat, to_string(j), color, center);
 
     polylines(debugMat, vecBox, true, color, 1);
   }
@@ -240,31 +242,31 @@ void detectLines(bool *lines, Mat inputImg) {
   imshow("Standard Hough Line Transform", debugMat);
 }
 
-void decodeHexagon(std::vector<cv::Point> contour, cv::Mat dst) {
-  std::vector<cv::Point> points;
+void decodeHexagon(vector<Point> contour, Mat dst) {
+  vector<Point> points;
 
   // Approximate contour with accuracy proportional
   // to the contour perimeter
-  cv::approxPolyDP(cv::Mat(contour), points,
-                   cv::arcLength(cv::Mat(contour), true) * 0.02, true);
+  approxPolyDP(Mat(contour), points,
+                   arcLength(Mat(contour), true) * 0.02, true);
 
   // Skip small or non-convex objects
-  if (std::fabs(cv::contourArea(contour) < 100 ||
-                !cv::isContourConvex(points)) ||
+  if (fabs(contourArea(contour) < 100 ||
+                !isContourConvex(points)) ||
       points.size() != 6) {
     return;
   }
 
   // Get the cosines of all corners
-  std::vector<double> cos;
+  vector<double> cos;
   for (int j = 2; j < 6 + 1; j++)
     cos.push_back(angle(points[j % 6], points[j - 2], points[j - 1]));
 
   // Sort ascending the cosine values
-  std::sort(cos.begin(), cos.end());
+  sort(cos.begin(), cos.end());
 
   // Draw center
-  std::vector<cv::Point> centerRect(4);
+  vector<Point> centerRect(4);
   if (_distance(points[0], points[1]) >= _distance(points[1], points[2])) {
     centerRect[0] = points[1];
     centerRect[1] = points[3];
@@ -282,13 +284,10 @@ void decodeHexagon(std::vector<cv::Point> contour, cv::Mat dst) {
   fourPointTransform(dst, warped_image, centerRect);
 
   // FLip the image on the y axis
-  cv::flip(warped_image, warped_image, 1);
+  flip(warped_image, warped_image, 1);
 
   // Resize the output to 200 x 200
   resize(warped_image, warped_image, Size(200, 200), 0, 0, INTER_CUBIC);
-
-  // Convert the image to grayscale
-  cvtColor(warped_image, warped_image, cv::COLOR_BGR2GRAY);
 
   // Auto threshold the image to two color
   threshold(warped_image, warped_image, 100, 255, THRESH_OTSU);
@@ -297,7 +296,7 @@ void decodeHexagon(std::vector<cv::Point> contour, cv::Mat dst) {
   for (int x = 0; x < 6; x++) {
     Point p = points[x];
     if (markerIndex == x) {
-      cv::circle(dst, p, 4 + x, ScalarHSV2BGR(x * 20, 120, 200), 5);
+      circle(dst, p, 4 + x, ScalarHSV2BGR(x * 20, 120, 200), 5);
     }
   }
 
@@ -311,21 +310,24 @@ void decodeHexagon(std::vector<cv::Point> contour, cv::Mat dst) {
   printBoolArray(lines);
 }
 
-void detectShape(cv::Mat src) {
-  // Convert to grayscale
-  cv::Mat gray;
-  cv::cvtColor(src, gray, cv::COLOR_BGR2GRAY);
+void detectShape(Mat src) {
+
+  cout << "Detect Shape" << endl;
+
+  cout << "Channels: " << src.channels() << endl;
+
+  imwrite("test.jpg", src);
 
   // Use Canny instead of threshold to catch squares with gradient shading
-  cv::Mat bw;
-  cv::Canny(gray, bw, 0, 50, 5);
+  Canny(src, src, 0, 50, 5);
 
   // Find hexagons
-  std::vector<std::vector<cv::Point>> hexagons;
-  cv::findContours(bw.clone(), hexagons, cv::RETR_EXTERNAL,
-                   cv::CHAIN_APPROX_SIMPLE);
+  vector<vector<Point>> hexagons;
+  findContours(src.clone(), hexagons, RETR_EXTERNAL,
+                   CHAIN_APPROX_SIMPLE);
 
-  std::sort(hexagons.begin(), hexagons.end(), compareAreas);
+  sort(hexagons.begin(), hexagons.end(), compareAreas);
+
 
   if (hexagons.size() > 0) {
     return decodeHexagon(hexagons[0], src);
@@ -337,21 +339,23 @@ int main(int argc, char **argv) {
   int camIndex = 0;
   char *camIndexArg = argv[1];
   int camIndexSize = sizeof(camIndexArg);
-  std::cout << *camIndexArg << std::endl;
+  cout << "CamIndex:" << *camIndexArg << endl;
   if (camIndexSize != 0) {
-    camIndex = std::atoi(camIndexArg);
+    camIndex = atoi(camIndexArg);
   }
 
-  createCamera(camIndex, false);
+  createCamera(camIndex, true);
 
   while (true) {
     Mat frame;
 
-    if (captureCamera(frame) == true) {
+    if (captureCamera(frame)) {
       detectShape(frame);
     }
 
-    cv::waitKey(100);
+    cv::waitKey(5000);
+
   }
+
   return 0;
 }
