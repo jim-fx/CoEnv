@@ -18,3 +18,7 @@ target_link_libraries(lcd_test libliquidcrystali2c.a libi2c.a)
 add_executable (rfid_test src/rfid.cpp include/MFRC522.h include/MFRC522.cpp)
 target_link_libraries(rfid_test libbcm2835.a)
 target_include_directories(rfid_test PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+add_executable (rfidled_test src/rfidled.cpp include/MFRC522.h include/MFRC522.cpp)
+target_link_libraries(rfidled_test libbcm2835.a libliquidcrystali2c.a libi2c.a)
+target_include_directories(rfidled_test PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
