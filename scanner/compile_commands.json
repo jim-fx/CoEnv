@@ -1,12 +1,12 @@
 [
 {
-  "directory": "/home/jim/COCO/CoEnv/scanner/build",
-  "command": "/usr/bin/c++ -I../include -isystem /usr/local/include/opencv4 -o CMakeFiles/scanner.dir/src/main.cpp.o -c /home/jim/COCO/CoEnv/scanner/src/main.cpp",
-  "file": "/home/jim/COCO/CoEnv/scanner/src/main.cpp"
+  "directory": "/home/main/build/CoEnv/scanner/build",
+  "command": "/bin/g++-10 -I../include -I../cmake-modules/liquidcrystal -g -o CMakeFiles/lcd_test.dir/src/lcd.cpp.o -c /home/main/build/CoEnv/scanner/src/lcd.cpp",
+  "file": "/home/main/build/CoEnv/scanner/src/lcd.cpp"
 },
 {
-  "directory": "/home/jim/COCO/CoEnv/scanner/build",
-  "command": "/usr/bin/cc -I../include -isystem /usr/local/include/opencv4 -o CMakeFiles/scanner.dir/include/helpers.c.o -c /home/jim/COCO/CoEnv/scanner/include/helpers.c",
-  "file": "/home/jim/COCO/CoEnv/scanner/include/helpers.c"
+  "directory": "/home/main/build/CoEnv/scanner/build",
+  "command": "/bin/g++-10 -I../include -isystem /usr/include/opencv4 -g -o CMakeFiles/scanner.dir/src/main.cpp.o -c /home/main/build/CoEnv/scanner/src/main.cpp",
+  "file": "/home/main/build/CoEnv/scanner/src/main.cpp"
 }
 ]
