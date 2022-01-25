@@ -10,7 +10,7 @@ find_package(OpenCV REQUIRED core imgproc)
 
 add_executable (scanner src/main.cpp include/helpers.h include/webcam.h)  
 target_include_directories(scanner PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries (scanner ${raspicam_CV_LIBS})
+target_link_libraries (scanner ${raspicam_CV_LIBS} -static)
 
 add_executable (lcd_test src/lcd.cpp)
 target_link_libraries(lcd_test libliquidcrystali2c.a libi2c.a)
