@@ -61,7 +61,7 @@ jobs:
 
       - run: "pnpm build"
         env:
-          BASE_PATH: /${{ github.event.repository.name }}
+          BASE_PATH: /${{ github.event.repository.name }}/marketing
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v2
@@ -93,7 +93,7 @@ jobs:
 
       - run: pnpm build
         env:
-          BASE_URL: ${{ github.event.repository.name }}
+          BASE_URL: ${{ github.event.repository.name }}/symbol/
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v2
