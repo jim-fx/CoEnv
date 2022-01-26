@@ -6,7 +6,6 @@
 #include "webcam.h"
 #include <liquidcrystal/LiquidCrystal_I2C.h>
 #include <sio_client.h>
-#include <wiringPi.h>
 
 #include <unistd.h>
 
@@ -410,16 +409,10 @@ string convertToString(char *a, int size) {
   return s;
 }
 
-void setColor(int r, int g, int b) {
-  digitalWrite(27, r);
-  digitalWrite(28, g);
-  digitalWrite(29, b);
-}
-
 int main(int argc, char **argv) {
   /* -- WS CLIENT -- */
   sio::client h;
-  h.connect("http://192.168.1.247:8080");
+  h.connect("http://192.168.1.84:8080");
   h.socket()->emit("coenv-station");
 
   /* -- INIT RFID --  */
@@ -437,39 +430,26 @@ int main(int argc, char **argv) {
   }
   createCamera(camIndex, true);
 
-  /* -- INIT GPIO -- */
-  wiringPiSetup();
-  const int r = 27;
-  const int g = 28;
-  const int b = 29;
-  pinMode(r, OUTPUT);
-  pinMode(g, OUTPUT);
-  pinMode(b, OUTPUT);
-
   while (true) {
 
-    lcd.clear();
     // Look for a card
     if (!mfrc.PICC_IsNewCardPresent() || !mfrc.PICC_ReadCardSerial()) {
-      setColor(0, 0, 0);
-      // continue;
-    } else {
-
-      // Print UID
-      char hexstr[mfrc.uid.size * 2 + 1];
-      int i;
-      for (i = 0; i < mfrc.uid.size; i++) {
-        sprintf(hexstr + i * 2, "%02X", mfrc.uid.uidByte[i]);
-      }
-      hexstr[i * 2] = 0;
-      int hexstr_size = sizeof(hexstr) / sizeof(char);
-      string id = convertToString(hexstr, hexstr_size);
-      h.socket()->emit("rfid", id);
-      cout << "RFID: " << id << endl;
-      lcd.print(hexstr);
-
-      setColor(255, 255, 255);
+      continue;
     }
+
+    // Print UID
+    char hexstr[mfrc.uid.size * 2 + 1];
+    int i;
+    for (i = 0; i < mfrc.uid.size; i++) {
+      sprintf(hexstr + i * 2, "%02X", mfrc.uid.uidByte[i]);
+    }
+    hexstr[i * 2] = 0;
+    int hexstr_size = sizeof(hexstr) / sizeof(char);
+    string id = convertToString(hexstr, hexstr_size);
+    h.socket()->emit("rfid", id);
+    cout << "RFID: " << id << endl;
+    lcd.clear();
+    lcd.print(hexstr);
 
     // Detect shape
     Mat frame;
