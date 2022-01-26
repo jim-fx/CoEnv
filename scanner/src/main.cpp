@@ -6,7 +6,6 @@
 #include "webcam.h"
 #include <liquidcrystal/LiquidCrystal_I2C.h>
 #include <sio_client.h>
-#include <wiringPi.h>
 
 #include <unistd.h>
 
@@ -411,6 +410,55 @@ string convertToString(char *a, int size) {
   return s;
 }
 
+LiquidCrystal_I2C *initLCD() {
+
+  // GPIO chip i2c address
+  u_int8_t i2c = 0x27;
+
+  // Control line PINs
+  u_int8_t en = 2;
+  u_int8_t rw = 1;
+  u_int8_t rs = 0;
+
+  // Data line PINs
+  u_int8_t d4 = 4;
+  u_int8_t d5 = 5;
+  u_int8_t d6 = 6;
+  u_int8_t d7 = 7;
+
+  // Backlight PIN
+  u_int8_t bl = 3;
+
+  // LCD display size (1x16, 2x16, 4x20)
+  u_int8_t rows = 2;
+  u_int8_t cols = 16;
+
+  int adapter_nr = 1;
+  char filename[20];
+
+  snprintf(filename, 19, "/dev/i2c-%d", adapter_nr);
+
+  printf("Using i2c device: %s, Rows: %u, Cols: %u\n", filename, rows, cols);
+
+  LiquidCrystal_I2C *lcd = new LiquidCrystal_I2C(filename, i2c, en, rw, rs, d4,
+                                                 d5, d6, d7, bl, POSITIVE);
+
+  lcd->begin(cols, rows);
+
+  return lcd;
+}
+
+// converts character array
+// to string and returns it
+string convertToString(char *a, int size) {
+  int i;
+  string s = "";
+  for (i = 0; i < size; i++) {
+    s = s + a[i];
+  }
+  return s;
+}
+
 void setColor(int r, int g, int b) {
   digitalWrite(27, r);
   digitalWrite(28, g);
@@ -420,7 +468,7 @@ void setColor(int r, int g, int b) {
 int main(int argc, char **argv) {
   /* -- WS CLIENT -- */
   sio::client h;
-  h.connect("http://192.168.1.247:8080");
+  h.connect("http://192.168.1.84:8080");
   h.socket()->emit("coenv-station");
 
   /* -- INIT RFID --  */
@@ -438,23 +486,11 @@ int main(int argc, char **argv) {
   }
   createCamera(camIndex, true);
 
-  /* -- INIT GPIO -- */
-  wiringPiSetup();
-  const int r = 27;
-  const int g = 28;
-  const int b = 29;
-  pinMode(r, OUTPUT);
-  pinMode(g, OUTPUT);
-  pinMode(b, OUTPUT);
-
   while (true) {
 
     // Look for a card
     if (!mfrc.PICC_IsNewCardPresent() || !mfrc.PICC_ReadCardSerial()) {
-      setColor(0, 0, 0);
       continue;
-    } else {
-      setColor(255, 255, 255);
     }
 
     // Print UID
