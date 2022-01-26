@@ -1,8 +1,11 @@
 #include "opencv2/imgproc.hpp"
 #include "opencv2/opencv.hpp"
 
+#include "MFRC522.h"
 #include "helpers.h"
 #include "webcam.h"
+#include <liquidcrystal/LiquidCrystal_I2C.h>
+#include <sio_client.h>
 
 #include <unistd.h>
 
@@ -128,15 +131,24 @@ void sortLines(bool *lines, int indexOfMarker) {
   }
 }
 
-void printBoolArray(bool *array, int split = 4) {
+string printBoolArray(bool *array, int split = 4) {
+  string result = "";
+  string t = "1";
+  string f = "0";
   for (int i = 0; i < 18; i++) {
     int out = array[i] == true ? 1 : 0;
+    if (array[i]) {
+      result.append(t);
+    } else {
+      result.append(f);
+    }
     std::cout << out;
     if (i % split == split - 1) {
       std::cout << " ";
     }
   }
   std::cout << std::endl;
+  return result;
 }
 
 void centerText(Mat output, std::string text, Scalar color, Point p) {
@@ -243,7 +255,7 @@ void detectLines(bool *lines, Mat inputImg) {
   /* imshow("Standard Hough Line Transform", debugMat); */
 }
 
-void decodeHexagon(std::vector<cv::Point> contour, cv::Mat dst) {
+string decodeHexagon(std::vector<cv::Point> contour, cv::Mat dst) {
   std::vector<cv::Point> points;
 
   // Approximate contour with accuracy proportional
@@ -255,7 +267,9 @@ void decodeHexagon(std::vector<cv::Point> contour, cv::Mat dst) {
   if (std::fabs(cv::contourArea(contour) < 100 ||
                 !cv::isContourConvex(points)) ||
       points.size() != 6) {
-    return;
+
+    cout << "No Result" << endl;
+    return string();
   }
 
   // Get the cosines of all corners
@@ -285,7 +299,7 @@ void decodeHexagon(std::vector<cv::Point> contour, cv::Mat dst) {
   fourPointTransform(dst, warped_image, centerRect);
 
   // FLip the image on the y axis
-  cv::flip(warped_image, warped_image, 1);
+  flip(warped_image, warped_image, 1);
 
   // Resize the output to 200 x 200
   resize(warped_image, warped_image, Size(200, 200), 0, 0, INTER_CUBIC);
@@ -311,56 +325,139 @@ void decodeHexagon(std::vector<cv::Point> contour, cv::Mat dst) {
   // Arrange the array into the correct way
   sortLines(lines, markerIndex);
 
-  printBoolArray(lines);
+  return printBoolArray(lines);
 }
 
-void detectShape(cv::Mat src) {
-
-  cout << "-------------" << endl;
-  cout << "Analyzing Frame" << endl;
-  cout << "Channels: " << src.channels() << endl;
+string detectShape(cv::Mat src) {
 
   // Convert to grayscale
-  cv::Mat gray;
-  cv::cvtColor(src, gray, cv::COLOR_BGR2GRAY);
+  Mat gray;
+  cvtColor(src, gray, COLOR_BGR2GRAY);
 
   // Use Canny instead of threshold to catch squares with gradient shading
-  cv::Mat bw;
-  cv::Canny(gray, bw, 0, 50, 5);
+  Mat bw;
+  Canny(gray, bw, 0, 50, 5);
 
   // Find hexagons
-  std::vector<std::vector<cv::Point>> hexagons;
-  cv::findContours(bw.clone(), hexagons, cv::RETR_EXTERNAL,
-                   cv::CHAIN_APPROX_SIMPLE);
+  vector<vector<Point>> hexagons;
+  findContours(bw.clone(), hexagons, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
 
-  std::sort(hexagons.begin(), hexagons.end(), compareAreas);
+  sort(hexagons.begin(), hexagons.end(), compareAreas);
 
-  if (hexagons.size() > 0) {
+  int hexagonAmount = hexagons.size();
+
+  cout << "VISUAL: ";
+  if (hexagonAmount > 0) {
+    int area = contourArea(hexagons[0]);
+    if (area < 100) {
+      cout << "small: " << area << endl;
+      return string();
+    }
     return decodeHexagon(hexagons[0], src);
   } else {
     cout << "No Result" << endl;
+    return string();
   }
 }
 
-int main(int argc, char **argv) {
+LiquidCrystal_I2C *initLCD() {
 
+  // GPIO chip i2c address
+  u_int8_t i2c = 0x27;
+
+  // Control line PINs
+  u_int8_t en = 2;
+  u_int8_t rw = 1;
+  u_int8_t rs = 0;
+
+  // Data line PINs
+  u_int8_t d4 = 4;
+  u_int8_t d5 = 5;
+  u_int8_t d6 = 6;
+  u_int8_t d7 = 7;
+
+  // Backlight PIN
+  u_int8_t bl = 3;
+
+  // LCD display size (1x16, 2x16, 4x20)
+  u_int8_t rows = 2;
+  u_int8_t cols = 16;
+
+  int adapter_nr = 1;
+  char filename[20];
+
+  snprintf(filename, 19, "/dev/i2c-%d", adapter_nr);
+
+  printf("Using i2c device: %s, Rows: %u, Cols: %u\n", filename, rows, cols);
+
+  LiquidCrystal_I2C *lcd = new LiquidCrystal_I2C(filename, i2c, en, rw, rs, d4,
+                                                 d5, d6, d7, bl, POSITIVE);
+
+  lcd->begin(cols, rows);
+
+  return lcd;
+}
+
+// converts character array
+// to string and returns it
+string convertToString(char *a, int size) {
+  int i;
+  string s = "";
+  for (i = 0; i < size; i++) {
+    s = s + a[i];
+  }
+  return s;
+}
+
+int main(int argc, char **argv) {
+  /* -- WS CLIENT -- */
+  sio::client h;
+  h.connect("http://192.168.1.84:8080");
+  h.socket()->emit("coenv-station");
+
+  /* -- INIT RFID --  */
+  MFRC522 mfrc;
+  mfrc.PCD_Init();
+
+  /* -- INIT LCD -- */
+  LiquidCrystal_I2C lcd = *initLCD();
+
+  /* -- INIT WEBCAM -- */
   int camIndex = 0;
   char *camIndexArg = argv[1];
-  int camIndexSize = sizeof(camIndexArg);
-  std::cout << *camIndexArg << std::endl;
-  if (camIndexSize != 0) {
+  if (sizeof(camIndexArg) != 0) {
     camIndex = std::atoi(camIndexArg);
   }
-
-  createCamera(camIndex, false);
+  createCamera(camIndex, true);
 
   while (true) {
-    Mat frame;
 
-    if (captureCamera(frame)) {
-      detectShape(frame);
+    // Look for a card
+    if (!mfrc.PICC_IsNewCardPresent() || !mfrc.PICC_ReadCardSerial()) {
+      continue;
     }
 
+    // Print UID
+    char hexstr[mfrc.uid.size * 2 + 1];
+    int i;
+    for (i = 0; i < mfrc.uid.size; i++) {
+      sprintf(hexstr + i * 2, "%02X", mfrc.uid.uidByte[i]);
+    }
+    hexstr[i * 2] = 0;
+    int hexstr_size = sizeof(hexstr) / sizeof(char);
+    string id = convertToString(hexstr, hexstr_size);
+    h.socket()->emit("rfid", id);
+    cout << "RFID: " << id << endl;
+    lcd.clear();
+    lcd.print(hexstr);
+
+    // Detect shape
+    Mat frame;
+    if (captureCamera(frame)) {
+      string id = detectShape(frame);
+    }
+
+    // Sleep for a 500ms
     usleep(500 * 1000);
   }
   return 0;

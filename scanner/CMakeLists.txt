@@ -1,16 +1,18 @@
 cmake_minimum_required(VERSION 3.10)
 PROJECT(scanner)
 
-INCLUDE_DIRECTORIES(/usr/local/include/)
-
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake-modules)
 
 find_package(raspicam REQUIRED)
 find_package(OpenCV REQUIRED core imgproc)
 
-add_executable (scanner src/main.cpp include/helpers.h include/webcam.h)  
-target_include_directories(scanner PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries (scanner ${raspicam_CV_LIBS} -static)
+add_executable (scanner src/main.cpp include/helpers.h include/webcam.h include/MFRC522.h include/MFRC522.cpp)  
+target_link_libraries (scanner ${raspicam_CV_LIBS} libbcm2835.a libliquidcrystali2c.a libi2c.a)
+target_link_libraries(scanner sioclient)
+target_link_libraries(scanner pthread )
+target_include_directories(scanner PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include /usr/local/include)
+set_property(TARGET scanner PROPERTY CXX_STANDARD 11)
+set_property(TARGET scanner PROPERTY CXX_STANDARD_REQUIRED ON)
 
 add_executable (lcd_test src/lcd.cpp)
 target_link_libraries(lcd_test libliquidcrystali2c.a libi2c.a)

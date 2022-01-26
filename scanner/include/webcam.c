@@ -15,7 +15,7 @@ bool usePiCam = false;
 
 void setWebCam(int index) {
 
-  cout << "Opening WebCam: " << index << endl;
+  cout << "Camera [WebCam]: initialize" << index << endl;
 
   webcam.open(index);
 
@@ -32,13 +32,15 @@ void setWebCam(int index) {
 
 void setPiCamera(int index) {
 
-  cout << "Opening PiCam..." << endl;
+  cout << "Camera [PiCam]: initialize" << endl;
   if (!picam.open()) {
     cerr << "Error opening the camera" << endl;
     return;
   }
-  double dWidth = webcam.get(CAP_PROP_FRAME_WIDTH);
-  double dHeight = webcam.get(CAP_PROP_FRAME_HEIGHT);
+  double dWidth = picam.get(CAP_PROP_FRAME_WIDTH);
+  double dHeight = picam.get(CAP_PROP_FRAME_HEIGHT);
+
+  picam.set(CAP_PROP_AUTO_EXPOSURE, 3);
 
   cout << "Resolution of the video : " << dWidth << " x " << dHeight << endl;
 }
@@ -46,16 +48,18 @@ void setPiCamera(int index) {
 bool captureCamera(Mat &image) {
   if (usePiCam) {
     bool worked = picam.grab();
-    if (!worked)
+    if (!worked) {
+      std::cout << "Error capturing camera" << std::endl;
       return false;
+    }
     picam.retrieve(image);
     return true;
   } else {
     return webcam.read(image);
   }
 }
-
 void createCamera(int index, bool isPi) {
+  usePiCam = isPi;
   if (isPi) {
     setPiCamera(index);
   } else {
