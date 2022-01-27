@@ -1,6 +1,5 @@
-#include <unistd.h>
-
 #include "MFRC522.h"
+#include <unistd.h>
 
 int main() {
   MFRC522 mfrc;
