@@ -6,6 +6,7 @@
 #include "webcam.h"
 #include <liquidcrystal/LiquidCrystal_I2C.h>
 #include <sio_client.h>
+#include <wiringPi.h>
 
 #include <unistd.h>
 
@@ -358,6 +359,7 @@ string detectShape(cv::Mat src) {
     cout << "No Result" << endl;
     return string();
   }
+  return s;
 }
 
 LiquidCrystal_I2C *initLCD() {
@@ -409,10 +411,16 @@ string convertToString(char *a, int size) {
   return s;
 }
 
+void setColor(int r, int g, int b) {
+  digitalWrite(27, r);
+  digitalWrite(28, g);
+  digitalWrite(29, b);
+}
+
 int main(int argc, char **argv) {
   /* -- WS CLIENT -- */
   sio::client h;
-  h.connect("http://192.168.1.84:8080");
+  h.connect("http://192.168.1.247:8080");
   h.socket()->emit("coenv-station");
 
   /* -- INIT RFID --  */
@@ -430,11 +438,23 @@ int main(int argc, char **argv) {
   }
   createCamera(camIndex, true);
 
+  /* -- INIT GPIO -- */
+  wiringPiSetup();
+  const int r = 27;
+  const int g = 28;
+  const int b = 29;
+  pinMode(r, OUTPUT);
+  pinMode(g, OUTPUT);
+  pinMode(b, OUTPUT);
+
   while (true) {
 
     // Look for a card
     if (!mfrc.PICC_IsNewCardPresent() || !mfrc.PICC_ReadCardSerial()) {
+      setColor(0, 0, 0);
       continue;
+    } else {
+      setColor(255, 255, 255);
     }
 
     // Print UID
