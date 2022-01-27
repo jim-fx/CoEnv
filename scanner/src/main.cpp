@@ -448,27 +448,28 @@ int main(int argc, char **argv) {
 
   while (true) {
 
+    lcd.clear();
     // Look for a card
     if (!mfrc.PICC_IsNewCardPresent() || !mfrc.PICC_ReadCardSerial()) {
       setColor(0, 0, 0);
-      continue;
+      // continue;
     } else {
+
+      // Print UID
+      char hexstr[mfrc.uid.size * 2 + 1];
+      int i;
+      for (i = 0; i < mfrc.uid.size; i++) {
+        sprintf(hexstr + i * 2, "%02X", mfrc.uid.uidByte[i]);
+      }
+      hexstr[i * 2] = 0;
+      int hexstr_size = sizeof(hexstr) / sizeof(char);
+      string id = convertToString(hexstr, hexstr_size);
+      h.socket()->emit("rfid", id);
+      cout << "RFID: " << id << endl;
+      lcd.print(hexstr);
+
       setColor(255, 255, 255);
     }
-
-    // Print UID
-    char hexstr[mfrc.uid.size * 2 + 1];
-    int i;
-    for (i = 0; i < mfrc.uid.size; i++) {
-      sprintf(hexstr + i * 2, "%02X", mfrc.uid.uidByte[i]);
-    }
-    hexstr[i * 2] = 0;
-    int hexstr_size = sizeof(hexstr) / sizeof(char);
-    string id = convertToString(hexstr, hexstr_size);
-    h.socket()->emit("rfid", id);
-    cout << "RFID: " << id << endl;
-    lcd.clear();
-    lcd.print(hexstr);
 
     // Detect shape
     Mat frame;
